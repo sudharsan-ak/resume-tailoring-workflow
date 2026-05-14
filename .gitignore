@@ -60,6 +60,9 @@ output/pdfs/*
 *.xdv
 texput.log
 
+# Local working files
+JD Text.txt
+
 # Sensitive local files
 .env
 .env.*
