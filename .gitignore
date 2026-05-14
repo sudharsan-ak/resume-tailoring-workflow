@@ -1,0 +1,83 @@
+# Local resume inputs
+input/*
+!input/README.md
+
+# Local workflow state is uncommitted by default; commit only guide/template files.
+workflow_state/*
+!workflow_state/.gitkeep
+!workflow_state/README.md
+!workflow_state/*.template.md
+!workflow_state/fresh_job_jds/
+workflow_state/fresh_job_jds/*
+!workflow_state/fresh_job_jds/.gitkeep
+
+# Real evidence is uncommitted by default; commit only guide/template files.
+evidence/**
+!evidence/
+!evidence/README.md
+!evidence/work/
+!evidence/work/README.md
+!evidence/work/*TEMPLATE*.md
+!evidence/work/*.template.json
+!evidence/projects/
+!evidence/projects/README.md
+!evidence/projects/*TEMPLATE*.md
+
+# Real role briefs are uncommitted by default; commit only guide/template files.
+Gmail/role_briefs/**
+!Gmail/role_briefs/
+!Gmail/role_briefs/README.md
+!Gmail/role_briefs/*TEMPLATE*.md
+
+# Optional local resume inputs that users commonly create while running the workflow
+master_resume.tex
+*.local.tex
+scripts/build-task.json
+
+# Generated output
+output/*
+!output/.gitkeep
+!output/tailored_tex/
+!output/pdfs/
+output/tailored_tex/*
+output/pdfs/*
+!output/tailored_tex/.gitkeep
+!output/pdfs/.gitkeep
+
+# Resume artifacts
+*.pdf
+*.docx
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.run.xml
+*.synctex.gz
+*.xdv
+texput.log
+
+# Sensitive local files
+.env
+.env.*
+credentials.json
+token.json
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Common generated/local workflow folders
+role_briefs/
+Tailored PDFs/
+Tailored Texs/
+The Master Resume*/
+
+# Editor and OS noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,10 @@
+# Sample Dedupe Ledger
+
+Use this fake format for private duplicate tracking.
+
+Format:
+Role at Company | Link | Status
+
+05-13-2026
+- Full Stack Product Engineer at ExampleCo | https://example.com/jobs/full-stack-product-engineer | Fetched
+- Frontend Engineer at SampleCRM | https://example.com/jobs/frontend-engineer | Tailored

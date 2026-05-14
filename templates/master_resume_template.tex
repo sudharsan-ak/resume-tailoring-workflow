@@ -1,0 +1,50 @@
+\documentclass[10pt]{article}
+\usepackage[margin=0.55in]{geometry}
+\usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
+\usepackage{titlesec}
+
+\pagenumbering{gobble}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{2pt}
+\setlist[itemize]{leftmargin=*, topsep=1pt, itemsep=1pt, parsep=0pt}
+\titleformat{\section}{\large\bfseries}{}{0em}{}[\titlerule]
+\titlespacing*{\section}{0pt}{6pt}{3pt}
+
+\begin{document}
+
+\begin{center}
+{\LARGE Candidate Name}\\
+\href{mailto:email@example.com}{email@example.com} \textbar{}
+555-010-0000 \textbar{}
+\href{https://example.com}{example.com} \textbar{}
+\href{https://github.com/example}{github.com/example}
+\end{center}
+
+\section*{Summary}
+Concise role-aligned summary.
+
+\section*{Skills}
+\textbf{Languages:} \\
+\textbf{Frontend:} \\
+\textbf{Backend:} \\
+\textbf{Testing/Tools:}
+
+\section*{Experience}
+\textbf{Company Name} \hfill Location \\
+\textit{Role Title} \hfill YYYY--Present
+\begin{itemize}
+  \item Achievement bullet with action, scope, stack, and truthful outcome.
+  \item Achievement bullet with action, scope, stack, and truthful outcome.
+\end{itemize}
+
+\section*{Projects}
+\textbf{Project Name} \hfill Stack
+\begin{itemize}
+  \item Project bullet with concrete feature, stack, and truthful outcome.
+\end{itemize}
+
+\section*{Education}
+\textbf{School Name} \hfill Degree or Program
+
+\end{document}

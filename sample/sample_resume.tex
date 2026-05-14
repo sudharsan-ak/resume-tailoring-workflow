@@ -1,0 +1,64 @@
+\documentclass[10pt]{article}
+\usepackage[margin=0.55in]{geometry}
+\usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
+\usepackage{titlesec}
+
+\pagenumbering{gobble}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{2pt}
+\setlist[itemize]{leftmargin=*, topsep=1pt, itemsep=1pt, parsep=0pt}
+\titleformat{\section}{\large\bfseries}{}{0em}{}[\titlerule]
+\titlespacing*{\section}{0pt}{6pt}{3pt}
+
+\begin{document}
+
+\begin{center}
+{\LARGE Example Candidate}\\
+\href{mailto:example.candidate@example.com}{example.candidate@example.com} \textbar{}
+555-010-1234 \textbar{}
+\href{https://example.com}{example.com} \textbar{}
+\href{https://github.com/example-candidate}{github.com/example-candidate}
+\end{center}
+
+\section*{Summary}
+Full-stack product engineer with 5 years of experience building React, TypeScript, and Node.js features for workflow-heavy SaaS products. Strong in customer-facing UI, API integration, performance improvements, and cross-functional delivery with product and design partners.
+
+\section*{Skills}
+\textbf{Languages:} TypeScript, JavaScript, SQL \\
+\textbf{Frontend:} React, HTML, CSS, accessibility basics \\
+\textbf{Backend:} Node.js, REST APIs, PostgreSQL, MongoDB basics \\
+\textbf{Testing/Tools:} Jest, integration tests, Git, CI, documentation
+
+\section*{Experience}
+\textbf{ExampleCo Labs} \hfill Remote \\
+\textit{Software Engineer} \hfill 2021--Present
+\begin{itemize}
+  \item Built React and TypeScript workflow configuration screens for a B2B SaaS product, improving setup clarity across multi-step customer flows.
+  \item Developed Node.js REST endpoints for workflow state, validation, and save operations used by customer-facing product surfaces.
+  \item Improved dashboard filtering performance by reducing unnecessary requests and rendering work in dense table views.
+  \item Added integration tests and API documentation for shared workflow endpoints, making failure cases easier for the team to diagnose.
+\end{itemize}
+
+\textbf{Sample Systems} \hfill Remote \\
+\textit{Associate Software Engineer} \hfill 2019--2021
+\begin{itemize}
+  \item Built internal operations tools used by support and account teams to review customer status, notes, and follow-up tasks.
+  \item Automated recurring data cleanup tasks with SQL and Node.js scripts, reducing manual spreadsheet updates.
+\end{itemize}
+
+\section*{Projects}
+\textbf{Task Queue Demo} \hfill TypeScript, Node.js, PostgreSQL, React
+\begin{itemize}
+  \item Built a small app to normalize tasks, statuses, owners, and due dates with duplicate detection.
+\end{itemize}
+
+\textbf{Metrics Viewer Demo} \hfill React, TypeScript, PostgreSQL
+\begin{itemize}
+  \item Built dashboard views for activity counts, item trends, and conversion-style summaries using filterable charts.
+\end{itemize}
+
+\section*{Education}
+\textbf{State University} \hfill B.S. Computer Science
+
+\end{document}

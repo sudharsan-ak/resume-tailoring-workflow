@@ -1,0 +1,13 @@
+{
+  "evidence": [
+    {
+      "id": "E01",
+      "title": "Workflow configuration UI",
+      "file": "E01_workflow_configuration_ui.md",
+      "themes": ["react", "typescript", "product-ui", "workflow"],
+      "best_for": ["frontend", "full-stack", "product-engineering"],
+      "stack": ["React", "TypeScript", "Node.js"],
+      "risk_notes": ["Does not prove infrastructure ownership."]
+    }
+  ]
+}
