@@ -403,6 +403,11 @@ Overleaf supports `pdflatex`, `xelatex`, and `lualatex`. Switch compilers under 
 - `latexmk` and `pdfinfo` are optional helper tools. `latexmk` can manage multi-pass builds, and `pdfinfo` lets the script verify the output page count.
 - If you do not want to install LaTeX locally, use the workflow through fit check and tailoring text, then compile the `.tex` later with Overleaf or another LaTeX service.
 
+## Built With
+
+- [Claude Code](https://claude.ai/code) — Anthropic
+- [Codex](https://platform.openai.com/docs/codex) — OpenAI
+
 ## What To Publish
 
 Publish the workflow, templates, docs, scripts, and fake samples.
