@@ -343,6 +343,52 @@ Also inspect:
 git status --short
 ```
 
+## Running Without a Local LaTeX Install
+
+You have three options depending on what you have installed:
+
+### Option 1: Local LaTeX (MiKTeX / TeX Live)
+
+Install a LaTeX distribution and run the scripts directly:
+
+- Windows: [MiKTeX](https://miktex.org/download)
+- macOS / Linux: [TeX Live](https://tug.org/texlive/)
+
+Then run:
+
+```powershell
+.\scripts\run-resume-task.ps1 -TexPath .\output\tailored_tex\company-role.tex -CleanArtifacts
+```
+
+### Option 2: Dev Container (Docker Desktop required)
+
+If you have [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed:
+
+1. Open the repo folder in VS Code
+2. VS Code will prompt "Reopen in Container" — click it
+3. The container starts with TeX Live, PowerShell, `pdflatex`, `xelatex`, and `lualatex` pre-installed
+4. Run the scripts exactly as you would locally
+
+**Custom fonts (Inter, etc.):**
+
+1. Download your font files (`.ttf` or `.otf`)
+2. Drop them into the `fonts/` folder (gitignored — stays local)
+3. Rebuild the container — it auto-installs the fonts via `fc-cache`
+4. Use `xelatex` or `lualatex` as your compiler in the LaTeX Workshop recipe picker
+
+### Option 3: Overleaf (no install at all)
+
+If you have neither Docker nor a local LaTeX install:
+
+1. Let the AI generate your tailored `.tex` file as normal
+2. Go to [overleaf.com](https://www.overleaf.com) and create a free account
+3. Click **New Project → Blank Project**
+4. Replace the default content with your `.tex` file
+5. If using custom fonts, upload your font files to the Overleaf project
+6. Click **Compile** — download the PDF
+
+Overleaf supports `pdflatex`, `xelatex`, and `lualatex`. Switch compilers under **Menu → Compiler**.
+
 ## Requirements
 
 - Any AI coding assistant that can read local files

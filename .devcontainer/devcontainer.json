@@ -1,0 +1,50 @@
+{
+  "name": "Resume Tailoring Workflow",
+  "build": {
+    "context": "..",
+    "dockerfile": "Dockerfile"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "James-Yu.latex-workshop",
+        "ms-vscode.powershell"
+      ],
+      "settings": {
+        "latex-workshop.latex.tools": [
+          {
+            "name": "pdflatex",
+            "command": "pdflatex",
+            "args": ["-interaction=nonstopmode", "-output-directory=%OUTDIR%", "%DOC%"]
+          },
+          {
+            "name": "xelatex",
+            "command": "xelatex",
+            "args": ["-interaction=nonstopmode", "-output-directory=%OUTDIR%", "%DOC%"]
+          },
+          {
+            "name": "lualatex",
+            "command": "lualatex",
+            "args": ["-interaction=nonstopmode", "-output-directory=%OUTDIR%", "%DOC%"]
+          }
+        ],
+        "latex-workshop.latex.recipes": [
+          {
+            "name": "pdflatex (default, no custom fonts)",
+            "tools": ["pdflatex"]
+          },
+          {
+            "name": "xelatex (use for Inter or custom fonts)",
+            "tools": ["xelatex"]
+          },
+          {
+            "name": "lualatex (alternative for custom fonts)",
+            "tools": ["lualatex"]
+          }
+        ],
+        "latex-workshop.latex.recipe.default": "pdflatex (default, no custom fonts)"
+      }
+    }
+  },
+  "postCreateCommand": "fc-cache -fv && echo 'Container ready. pdflatex, xelatex, lualatex, and PowerShell are all available.'"
+}
