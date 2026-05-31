@@ -1,4 +1,4 @@
-﻿# Architecture
+# Architecture
 
 This repo separates public workflow logic from private candidate data while preserving the same folder shape used by the real workflow.
 
@@ -41,7 +41,7 @@ Local files inside the mirrored workflow structure:
 ```text
 input/<your-resume-file>.pdf
 master_resume.tex
-JD Text.txt
+JD Text.md
 evidence/work/INDEX.md
 evidence/work/EVIDENCE_ROUTER.md
 evidence/work/EVIDENCE_CHEATSHEET.md
@@ -65,7 +65,7 @@ Purpose:
 - hold fetched-job ledgers and local state
 - hold local build queues that may contain real role filenames
 
-Note: `JD Text.txt` is committed as a public template. Restore it before committing if you paste a real JD into it.
+Note: `JD Text.md` is committed as a public template. Restore it before committing if you paste a real JD into it.
 
 ## Workflow Data Flow
 

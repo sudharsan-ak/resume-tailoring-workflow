@@ -1,4 +1,4 @@
-﻿# Privacy Model
+# Privacy Model
 
 The repo is designed around an allowlist approach: commit workflow logic, fake samples, and templates; keep populated real data local.
 
@@ -55,7 +55,7 @@ Use these paths for local workflow data:
 ```text
 input/<your-resume-file>.pdf
 master_resume.tex
-JD Text.txt
+JD Text.md
 evidence/work/
 evidence/projects/
 Gmail/role_briefs/
@@ -64,7 +64,7 @@ output/
 scripts/build-task.json
 ```
 
-`JD Text.txt` is a committed public template. If you paste a real JD into it, restore the template before committing.
+`JD Text.md` is a committed public template. If you paste a real JD into it, restore the template before committing.
 
 Populated evidence, role briefs, workflow state, input PDFs, and output files are ignored by `.gitignore`. Keep real resumes out of commits by storing them outside the repo, adding the exact filename to `.gitignore`, or using a local-only filename pattern such as `*.local.tex`.
 

@@ -97,6 +97,6 @@ Use the resume PDF in input/ to create master_resume.tex, workflow_state/resume_
 Only use evidence present in the resume. Do not invent claims.
 ```
 
-If you paste a real JD into `JD Text.txt`, restore the public template before committing.
+If you paste a real JD into `JD Text.md`, restore the public template before committing.
 
 Your real resume `.tex` file is only needed when you ask the assistant to tailor/build a PDF.

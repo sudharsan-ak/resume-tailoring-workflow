@@ -43,7 +43,7 @@ For demos:
 
 For private runs:
 
-1. JD input: `JD Text.txt`, a JD pasted directly in chat, a JD link, or `workflow_state/fresh_job_jds/...`
+1. JD input: `JD Text.md`, a JD pasted directly in chat, a JD link, or `workflow_state/fresh_job_jds/...`
 2. `workflow_state/profile_notes.md`
 3. `workflow_state/resume_digest.md`
 4. `workflow_state/bullet_index.md`

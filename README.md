@@ -1,4 +1,4 @@
-﻿# Resume Tailoring Workflow
+# Resume Tailoring Workflow
 
 A reusable, privacy-first workflow for using an AI coding assistant to turn a default resume into a role-specific LaTeX resume and PDF.
 
@@ -102,7 +102,7 @@ After first-time setup, your local workflow usually looks like this:
 input/
   <your-resume-file>.pdf
 
-JD Text.txt
+JD Text.md
 master_resume.tex
 
 evidence/
@@ -144,9 +144,9 @@ Use any one of these:
 
 - paste the JD directly into the AI chat
 - paste a JD link into the AI chat and ask the assistant to read it, if browsing/tool access is available
-- paste the role into `JD Text.txt`
+- paste the role into `JD Text.md`
 
-`JD Text.txt` is included as a public template:
+`JD Text.md` is included as a public template:
 
 ```text
 Company:
@@ -156,7 +156,7 @@ Apply Link:
 Job Description:
 ```
 
-If you paste a real JD into `JD Text.txt`, restore the template before committing.
+If you paste a real JD into `JD Text.md`, restore the template before committing.
 
 ### 2. Fit Check
 
@@ -168,7 +168,7 @@ Fit check this role.
 
 What happens:
 
-- reads the JD from chat, link, `JD Text.txt`, or `workflow_state/fresh_job_jds/`
+- reads the JD from chat, link, `JD Text.md`, or `workflow_state/fresh_job_jds/`
 - reads `workflow_state/profile_notes.md` and `workflow_state/resume_digest.md`
 - scores the role like a skeptical recruiter or hiring manager
 - does not treat visa, sponsorship, clearance, location, or other preferences as blockers unless you put them in `profile_notes.md` or state them in chat
@@ -281,7 +281,7 @@ workflow_state/
 CHAT_BOOTSTRAP.md        Start here in a new AI chat
 playbook/                Stage-by-stage workflow rules
 input/                   Put your resume PDF here for setup
-JD Text.txt              Public template for role/JD input
+JD Text.md              Public template for role/JD input
 templates/               Default LaTeX master resume style
 sample/                  Fake demo resume, JD, evidence, and role brief
 evidence/                Templates for real work/project evidence
@@ -323,7 +323,7 @@ output/pdfs/
 Do not commit:
 
 - real resumes or resume PDFs under `input/`
-- real job descriptions pasted into `JD Text.txt`
+- real job descriptions pasted into `JD Text.md`
 - generated PDFs or DOCX files
 - populated evidence files
 - populated role briefs
@@ -382,12 +382,12 @@ If you have neither Docker nor a local LaTeX install:
 
 1. Let the AI generate your tailored `.tex` file as normal
 2. Go to [overleaf.com](https://www.overleaf.com) and create a free account
-3. Click **New Project → Blank Project**
+3. Click **New Project -> Blank Project**
 4. Replace the default content with your `.tex` file
 5. If using custom fonts, upload your font files to the Overleaf project
 6. Click **Compile** — download the PDF
 
-Overleaf supports `pdflatex`, `xelatex`, and `lualatex`. Switch compilers under **Menu → Compiler**.
+Overleaf supports `pdflatex`, `xelatex`, and `lualatex`. Switch compilers under **Menu -> Compiler**.
 
 ## Requirements
 

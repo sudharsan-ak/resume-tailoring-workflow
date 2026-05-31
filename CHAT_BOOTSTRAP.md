@@ -1,4 +1,4 @@
-﻿# Chat Bootstrap
+# Chat Bootstrap
 
 Read this file first in a new AI chat.
 
@@ -14,7 +14,7 @@ Purpose:
 - Then read only the stage doc needed for the user's current prompt.
 - Use public sample files for demos.
 - For first-time setup, use the resume PDF the user placed under `input/` to create `master_resume.tex`, `workflow_state/resume_digest.md`, `workflow_state/bullet_index.md`, `workflow_state/profile_notes.md`, and initial `evidence/` files.
-- For real runs, use `JD Text.txt`, a JD pasted in chat, or a JD link for the role input.
+- For real runs, use `JD Text.md`, a JD pasted in chat, or a JD link for the role input.
 - Use `evidence/`, `Gmail/role_briefs/`, and `workflow_state/` for supporting workflow data.
 - Use the user's real resume `.tex` file only during tailor/build.
 

@@ -80,11 +80,11 @@ foreach ($file in $files) {
 }
 
 $templateWarnings = @()
-$jdTemplatePath = Join-Path $repoRoot 'JD Text.txt'
+$jdTemplatePath = Join-Path $repoRoot 'JD Text.md'
 if (Test-Path $jdTemplatePath) {
   $jdText = Get-Content -LiteralPath $jdTemplatePath -Raw -ErrorAction SilentlyContinue
   if ($jdText -notlike '*PUBLIC TEMPLATE - DO NOT COMMIT A REAL JOB DESCRIPTION IN THIS FILE*') {
-    $templateWarnings += 'JD Text.txt no longer contains the public template marker. Restore it before committing.'
+    $templateWarnings += 'JD Text.md no longer contains the public template marker. Restore it before committing.'
   }
 }
 

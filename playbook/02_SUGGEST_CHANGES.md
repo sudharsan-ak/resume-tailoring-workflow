@@ -1,4 +1,4 @@
-﻿# Stage 2: Suggest Changes
+# Stage 2: Suggest Changes
 
 Use this stage when the user asks how to tailor the resume for a role.
 
@@ -13,7 +13,7 @@ Demo inputs:
 - `sample/sample_evidence_bank.md`
 
 Real local inputs:
-- `JD Text.txt`, a JD pasted directly in chat, a JD link, or `workflow_state/fresh_job_jds/...`
+- `JD Text.md`, a JD pasted directly in chat, a JD link, or `workflow_state/fresh_job_jds/...`
 - `workflow_state/profile_notes.md`
 - `master_resume.tex` when exact bullet verification is needed
 - `workflow_state/bullet_index.md`

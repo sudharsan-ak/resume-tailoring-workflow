@@ -1,4 +1,4 @@
-﻿# Stage 1: Fit Check
+# Stage 1: Fit Check
 
 Use this stage when the user asks whether one or more roles are worth pursuing.
 
@@ -12,7 +12,7 @@ Demo inputs:
 - `sample/sample_resume.tex` only if exact verification is needed
 
 Real local inputs:
-- `JD Text.txt`, a JD pasted directly in chat, a JD link, or `workflow_state/fresh_job_jds/...`
+- `JD Text.md`, a JD pasted directly in chat, a JD link, or `workflow_state/fresh_job_jds/...`
 - `workflow_state/profile_notes.md`
 - `workflow_state/resume_digest.md`
 - `workflow_state/bullet_index.md` only if exact bullet text is needed

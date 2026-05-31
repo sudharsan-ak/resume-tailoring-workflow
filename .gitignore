@@ -61,7 +61,7 @@ output/pdfs/*
 texput.log
 
 # Local working files
-JD Text.txt
+JD Text.md
 
 # Custom fonts — drop .ttf/.otf files here for xelatex/lualatex builds
 # The fonts/ folder itself is committed (via .gitkeep); font files are not
