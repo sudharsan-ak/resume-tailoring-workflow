@@ -1,12 +1,12 @@
 # Resume Tailoring Workflow
 
-A reusable, privacy-first workflow for using an AI coding assistant to turn a default resume into a role-specific LaTeX resume and PDF.
+A privacy-first workflow for turning a default resume into a role-specific LaTeX PDF using an AI coding assistant.
 
-This repo proves the workflow. It should not publish a real resume, real work evidence, job history, recruiter notes, generated PDFs, or private candidate details.
+The assistant acts like a skeptical recruiter or hiring manager: it scores honestly, challenges weak fit, and tailors only from evidence the resume can actually defend.
 
-The workflow is meant to work with Codex, Claude Code, or any AI coding assistant that can read and edit local files.
+Works with Claude Code, Codex, or any AI coding assistant that can read and edit local files.
 
-Core behavior: the assistant should act like a ruthless recruiter or hiring manager for the specific role. It should score honestly, challenge weak fit, and tailor only from evidence the resume can defend.
+---
 
 ## Start Here
 
@@ -16,401 +16,96 @@ Open a new AI chat from this repo and say:
 Read CHAT_BOOTSTRAP.md first and follow it for this workflow.
 ```
 
-The assistant will route your request through the correct playbook stage.
+The assistant routes your request through the correct playbook stage automatically.
 
-If this README feels too detailed, do not try to follow every section manually. Ask the AI to guide you:
+---
 
-```text
-Read README.md and CHAT_BOOTSTRAP.md, then guide me through first-time setup step by step. Tell me what files you need before creating anything.
-```
+## What It Does
+
+| Stage | Trigger | Output |
+|---|---|---|
+| Fit Check | `Fit check this role.` | Score table: Initial, Tailored, Verdict |
+| Suggest Changes | `Suggest changes.` | Angle, bullet swaps, skill cuts, gaps |
+| Tailor + Build | `Tailor the PDF.` | Role-specific `.tex` + compiled PDF |
+| Recruiter Outreach | `Draft recruiter outreach.` | Role brief + outreach draft |
+| Fresh Job Search | `Find 10 fresh roles.` | Scored list, no duplicates |
+
+---
 
 ## First-Time Setup
 
-Start with your existing resume PDF. You do **not** manually fill every Markdown file from scratch.
+You start with your existing resume PDF. The AI generates all workflow files from it.
 
-1. Put your resume PDF in the `input/` folder. The filename can be anything.
-
-```text
-input/<your-resume-file>.pdf
-```
-
-2. Ask the AI assistant:
+1. Drop your resume PDF into `input/`
+2. Ask the AI:
 
 ```text
-Read CHAT_BOOTSTRAP.md first. Use the resume PDF in input/ to create my initial workflow files:
-
-- master_resume.tex
-- workflow_state/resume_digest.md
-- workflow_state/bullet_index.md
-- workflow_state/profile_notes.md
-- evidence/work/INDEX.md
-- evidence/work/EVIDENCE_ROUTER.md
-- evidence/work/E*.md
-- evidence/projects/INDEX.md
-- evidence/projects/P*.md
-
+Read CHAT_BOOTSTRAP.md first. Use the resume PDF in input/ to create my initial workflow files.
 Only use evidence present in the resume. Do not invent claims.
 ```
 
-3. Review the generated files and tighten anything that is wrong or too vague.
+3. Review the generated files and correct anything wrong or too vague.
 
-Default LaTeX style:
-- `master_resume.tex` should use the simple ATS-friendly style in `templates/master_resume_template.tex` unless you ask the AI to preserve a different style.
-- The default template uses plain `article`-class LaTeX compatible with `pdflatex`: tight margins, simple section rules, compact bullets, and no custom system font dependency.
-- The default font is the standard LaTeX font chosen by `pdflatex`, usually Computer Modern or Latin Modern.
-- Do not use `fontspec`, variable fonts, custom system fonts, or `lualatex`-only packages unless you explicitly ask for them.
-- If you want a custom visual style or specific fonts, install those fonts locally and ask the AI to customize the LaTeX. Advanced font handling usually requires `lualatex` and `fontspec`.
-- If LaTeX is not installed, the AI can still create `master_resume.tex` and all Markdown workflow files. It just cannot build a PDF locally until you install a LaTeX distribution or use an external compiler such as Overleaf.
+See [docs/first-time-setup.md](docs/first-time-setup.md) for the full file list and what each file does.
 
-After setup, the AI should summarize the files it created and end with next options, for example:
+---
+
+## Folder Structure
 
 ```text
-Created:
-- master_resume.tex
-- workflow_state/resume_digest.md
-- workflow_state/bullet_index.md
-- workflow_state/profile_notes.md
-- evidence/work/INDEX.md
-- evidence/work/EVIDENCE_ROUTER.md
-- evidence/work/E01_*.md
-- evidence/projects/INDEX.md
-- evidence/projects/P01_*.md
-
-Next options:
-- paste a JD or link for fit check
-- review workflow_state/resume_digest.md
-- add more detail to evidence/work/ or evidence/projects/
-- build master_resume.tex to verify LaTeX works
+CHAT_BOOTSTRAP.md        Start here in every new AI chat
+playbook/                Stage-by-stage workflow rules
+input/                   Drop your resume PDF here for setup
+JD Text.md               Template for role and JD input
+templates/               Default LaTeX master resume style
+sample/                  Fake demo resume, JD, evidence, role brief
+evidence/                Templates for work and project evidence
+Gmail/                   Optional outreach rules and role-brief template
+workflow_state/          Templates and local workflow state files
+output/                  Generated tailored TEX and PDF files (gitignored)
+scripts/                 Optional helper scripts
+docs/                    Setup, LaTeX options, privacy, architecture
 ```
 
-What those files mean:
+---
 
-- `master_resume.tex`: local LaTeX version of the default resume, ignored by Git
-- `workflow_state/resume_digest.md`: compact summary of the default resume for low-token fit checks
-- `workflow_state/bullet_index.md`: stable bullet IDs so the assistant can discuss exact changes
-- `workflow_state/profile_notes.md`: target roles, hard blockers, work authorization, location preferences, and claims to avoid
-- `evidence/work/`: evidence extracted from professional experience bullets
-- `evidence/projects/`: evidence extracted from project bullets
+## Privacy
 
-The Markdown files are generated from the default resume first. You can enrich them later with better evidence as you use the workflow.
+Real resumes, evidence, job descriptions, generated PDFs, and recruiter notes stay local and are gitignored.
 
-## Local Files To Populate
-
-After first-time setup, your local workflow usually looks like this:
-
-```text
-input/
-  <your-resume-file>.pdf
-
-JD Text.md
-master_resume.tex
-
-evidence/
-  work/
-    INDEX.md
-    EVIDENCE_ROUTER.md
-    E01_local_work_evidence.md
-  projects/
-    INDEX.md
-    P01_local_project.md
-
-workflow_state/
-  profile_notes.md
-  resume_digest.md
-  bullet_index.md
-  tailored_count.md
-  jobs_fetched_history.md
-```
-
-Helpful templates:
-
-```text
-templates/master_resume_template.tex
-evidence/work/E00_TEMPLATE.md
-evidence/projects/P00_TEMPLATE.md
-workflow_state/profile_notes.template.md
-workflow_state/resume_digest.template.md
-workflow_state/bullet_index.template.md
-workflow_state/tailored_count.template.md
-```
-
-Real populated files stay local. Do not commit them.
-
-## Real Workflow
-
-### 1. Add The Role
-
-Use any one of these:
-
-- paste the JD directly into the AI chat
-- paste a JD link into the AI chat and ask the assistant to read it, if browsing/tool access is available
-- paste the role into `JD Text.md`
-
-`JD Text.md` is included as a public template:
-
-```text
-Company:
-Role:
-Job Link:
-Apply Link:
-Job Description:
-```
-
-If you paste a real JD into `JD Text.md`, restore the template before committing.
-
-### 2. Fit Check
-
-Ask:
-
-```text
-Fit check this role.
-```
-
-What happens:
-
-- reads the JD from chat, link, `JD Text.md`, or `workflow_state/fresh_job_jds/`
-- reads `workflow_state/profile_notes.md` and `workflow_state/resume_digest.md`
-- scores the role like a skeptical recruiter or hiring manager
-- does not treat visa, sponsorship, clearance, location, or other preferences as blockers unless you put them in `profile_notes.md` or state them in chat
-- calls out hard blockers, matches, gaps, and whether tailoring is worth it
-
-Output is in chat:
-
-```text
-Company | Role | Initial | Tailored | Verdict
-```
-
-### 3. Suggest Changes
-
-Ask:
-
-```text
-Suggest changes.
-```
-
-What happens:
-
-- maps the JD to evidence in `evidence/work/` and `evidence/projects/`
-- uses `workflow_state/bullet_index.md` to discuss current resume bullets by ID
-- opens `master_resume.tex` only if exact verification is needed
-- recommends truthful changes without inventing experience
-
-Output is in chat:
-
-```text
-Angle
-Remove
-Change
-Skills remove/add
-Order
-Projects
-Gaps
-```
-
-For copy-ready bullet text, ask:
-
-```text
-Show exact bullet changes.
-```
-
-### 4. Tailor And Build
-
-Ask:
-
-```text
-Tailor the PDF.
-```
-
-What happens with full filesystem/tool access:
-
-- the assistant copies `master_resume.tex`
-- creates a role-specific `.tex` in `output/tailored_tex/`
-- applies the approved changes
-- runs LaTeX directly
-- writes the PDF to `output/pdfs/`
-- cleans temporary build files
-
-The scripts are optional helpers. They are useful for manual builds or fallback execution, but a capable coding assistant with full access can run the workflow directly.
-
-Manual build command:
+Before committing, run:
 
 ```powershell
-.\scripts\run-resume-task.ps1 -TexPath .\output\tailored_tex\company-role.tex -CleanArtifacts
+.\scripts\privacy-check.ps1 -ExtraPatterns "Your Real Name","Your Employer"
 ```
 
-Expected output:
+See [docs/privacy.md](docs/privacy.md) for the full do-not-commit list.
 
-```text
-output/tailored_tex/company-role.tex
-output/pdfs/company-role.pdf
-```
+---
 
-### 5. Optional Recruiter Outreach
+## LaTeX Setup
 
-If you want outreach support later, create a role brief under:
+| Option | What you need |
+|---|---|
+| Local (recommended) | MiKTeX (Windows) or TeX Live (macOS/Linux) |
+| Dev Container | Docker Desktop + VS Code |
+| No install | Overleaf (compile online) |
 
-```text
-Gmail/role_briefs/
-```
+See [docs/latex-setup.md](docs/latex-setup.md) for install steps and compiler options.
 
-Then ask:
-
-```text
-Draft recruiter outreach for this role.
-```
-
-The assistant uses the Gmail rules and role brief to draft concise outreach. It should not send anything without explicit confirmation.
-
-### 6. Optional Fresh Job Search
-
-Ask:
-
-```text
-Find 10 fresh roles posted in the last 24 hours.
-```
-
-The assistant should read real JDs before scoring them, avoid duplicates, and keep local history under:
-
-```text
-workflow_state/
-```
-
-## Folder Tour
-
-```text
-CHAT_BOOTSTRAP.md        Start here in a new AI chat
-playbook/                Stage-by-stage workflow rules
-input/                   Put your resume PDF here for setup
-JD Text.md              Public template for role/JD input
-templates/               Default LaTeX master resume style
-sample/                  Fake demo resume, JD, evidence, and role brief
-evidence/                Templates for real work/project evidence
-Gmail/                   Optional outreach rules and role-brief template
-workflow_state/          Templates and local workflow state
-output/                  Ignored generated tailored TEX/PDF files
-scripts/                 Optional helper scripts
-docs/                    Extra architecture/privacy walkthroughs
-```
+---
 
 ## Quick Demo
 
-Try the workflow without private data:
+Try the workflow with no private data:
 
 ```text
 Use the sample files. Fit check sample/sample_job_description.md against the sample resume.
 ```
 
-Then:
-
-```text
-Suggest changes for the sample role.
-```
-
-To test the sample LaTeX build:
-
-```powershell
-.\scripts\run-resume-task.ps1 -TexPath .\sample\sample_resume.tex -CleanArtifacts
-```
-
-The PDF goes to:
-
-```text
-output/pdfs/
-```
-
-## Privacy Rules
-
-Do not commit:
-
-- real resumes or resume PDFs under `input/`
-- real job descriptions pasted into `JD Text.md`
-- generated PDFs or DOCX files
-- populated evidence files
-- populated role briefs
-- recruiter contacts
-- job-search history
-- credentials, tokens, or `.env` files
-
-Before committing, run:
-
-```powershell
-.\scripts\privacy-check.ps1 -ExtraPatterns "Your Real Name","Your Employer","Internal Project Name"
-```
-
-Also inspect:
-
-```powershell
-git status --short
-```
-
-## Running Without a Local LaTeX Install
-
-You have three options depending on what you have installed:
-
-### Option 1: Local LaTeX (MiKTeX / TeX Live)
-
-Install a LaTeX distribution and run the scripts directly:
-
-- Windows: [MiKTeX](https://miktex.org/download)
-- macOS / Linux: [TeX Live](https://tug.org/texlive/)
-
-Then run:
-
-```powershell
-.\scripts\run-resume-task.ps1 -TexPath .\output\tailored_tex\company-role.tex -CleanArtifacts
-```
-
-### Option 2: Dev Container (Docker Desktop required)
-
-If you have [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed:
-
-1. Open the repo folder in VS Code
-2. VS Code will prompt "Reopen in Container" — click it
-3. The container starts with TeX Live, PowerShell, `pdflatex`, `xelatex`, and `lualatex` pre-installed
-4. Run the scripts exactly as you would locally
-
-**Custom fonts (Inter, etc.):**
-
-1. Download your font files (`.ttf` or `.otf`)
-2. Drop them into the `fonts/` folder (gitignored — stays local)
-3. Rebuild the container — it auto-installs the fonts via `fc-cache`
-4. Use `xelatex` or `lualatex` as your compiler in the LaTeX Workshop recipe picker
-
-### Option 3: Overleaf (no install at all)
-
-If you have neither Docker nor a local LaTeX install:
-
-1. Let the AI generate your tailored `.tex` file as normal
-2. Go to [overleaf.com](https://www.overleaf.com) and create a free account
-3. Click **New Project -> Blank Project**
-4. Replace the default content with your `.tex` file
-5. If using custom fonts, upload your font files to the Overleaf project
-6. Click **Compile** — download the PDF
-
-Overleaf supports `pdflatex`, `xelatex`, and `lualatex`. Switch compilers under **Menu -> Compiler**.
-
-## Requirements
-
-- Any AI coding assistant that can read local files
-- PowerShell for the helper scripts. On macOS/Linux, install PowerShell 7 or compile the `.tex` files manually with your LaTeX tools.
-- LaTeX is only required if you want local PDF builds.
-- If LaTeX is not installed, the AI can still create and edit `master_resume.tex`, workflow state files, evidence files, and tailored `.tex` files.
-- `pdflatex` is the baseline compiler. `lualatex` is optional for users who explicitly want advanced font handling.
-- For local PDF builds, install a full LaTeX distribution:
-  - Windows: [MiKTeX](https://miktex.org/download)
-  - macOS/Linux: [TeX Live](https://tug.org/texlive/)
-- For custom resume fonts, install the font files on your system and ask the AI to update the LaTeX style. This may require `lualatex` plus `fontspec`.
-- `latexmk` and `pdfinfo` are optional helper tools. `latexmk` can manage multi-pass builds, and `pdfinfo` lets the script verify the output page count.
-- If you do not want to install LaTeX locally, use the workflow through fit check and tailoring text, then compile the `.tex` later with Overleaf or another LaTeX service.
+---
 
 ## Built With
 
 - [Claude Code](https://claude.ai/code) — Anthropic
 - [Codex](https://platform.openai.com/docs/codex) — OpenAI
-
-## What To Publish
-
-Publish the workflow, templates, docs, scripts, and fake samples.
-
-Do not publish real evidence. The reusable part is the system for turning truthful evidence into role-specific resumes.
-
