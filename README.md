@@ -18,6 +18,10 @@ Read CHAT_BOOTSTRAP.md first and follow it for this workflow.
 
 The assistant routes your request through the correct playbook stage automatically.
 
+`CHAT_BOOTSTRAP.md` is the assistant's behavior prompt: it tells the AI to act like a skeptical recruiter or hiring manager, avoid invented claims, and follow the workflow rules.
+
+If the workflow feels hard to follow at first, ask the assistant to read the repo files and walk you through the process step by step before you start tailoring.
+
 ---
 
 ## What It Does
