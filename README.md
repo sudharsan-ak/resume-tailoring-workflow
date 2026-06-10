@@ -69,6 +69,7 @@ workflow_state/          Templates and local workflow state files
 output/                  Generated tailored TEX and PDF files (gitignored)
 scripts/                 Optional helper scripts
 docs/                    Setup, LaTeX options, privacy, architecture
+mcp-server/              Optional MCP server for headless JD fetching
 ```
 
 ---
@@ -106,6 +107,16 @@ Try the workflow with no private data:
 ```text
 Use the sample files. Fit check sample/sample_job_description.md against the sample resume.
 ```
+
+---
+
+## Optional: MCP Server (Job Link Fetching)
+
+The `mcp-server/` folder adds an optional MCP server for Claude Code and Codex sidebars. Its only job is **URL fetching** — it uses a headless browser to pull the full rendered JD from any ATS site (Greenhouse, Lever, Ashby, and others that block normal web fetch). The sidebar AI then cleans the raw text and saves a structured snapshot to `workflow_state/fresh_job_jds/`.
+
+Without it, you copy-paste the JD text into the chat manually. With it, you drop a URL and the fetch happens automatically.
+
+See [docs/mcp-setup.md](docs/mcp-setup.md) for setup instructions.
 
 ---
 
