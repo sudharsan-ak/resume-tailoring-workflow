@@ -75,9 +75,6 @@ export async function processJd({ input, company, role, jdContent: providedConte
     rawText = raw;
     source = "JD Text.md";
     link = "See JD Text.md";
-    if (!company || !role) {
-      return "Please provide company and role name when using 'next' mode.";
-    }
   } else if (isUrl) {
     link = input.trim();
     source = new URL(link).hostname;
@@ -91,21 +88,15 @@ export async function processJd({ input, company, role, jdContent: providedConte
         return `Failed to fetch URL: ${msg}`;
       }
     }
-    if (!company || !role) {
-      return `URL fetched. Please re-call with company and role.\n\nRaw text preview:\n${rawText.slice(0, 500)}`;
-    }
   } else {
     rawText = input;
     source = "pasted";
-    if (!company || !role) {
-      return "Please provide company and role when pasting raw JD text.";
-    }
   }
 
   return [
     `RAW_JD_FETCHED`,
-    `Company: ${company}`,
-    `Role: ${role}`,
+    `Company: ${company ?? "extract from JD text below"}`,
+    `Role: ${role ?? "extract from JD text below"}`,
     `Source: ${source}`,
     `Link: ${link}`,
     `---RAW_TEXT_START---`,
