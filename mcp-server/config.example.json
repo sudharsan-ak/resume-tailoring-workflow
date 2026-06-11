@@ -1,3 +1,4 @@
 {
-  "workflowRoot": "C:/path/to/your/resume-tailoring-workflow"
+  "workflowRoot": "C:/path/to/your/resume-tailoring-workflow",
+  "evidencePath": "C:/path/to/your/evidence/folder"
 }

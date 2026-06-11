@@ -78,12 +78,13 @@ token.json
 *.p12
 *.pfx
 
-# MCP server — local config, credentials, and build output
+# MCP server — local config, credentials, build output, and generated index
 mcp-server/config.json
 mcp-server/credentials.json
 mcp-server/gmail-token.json
 mcp-server/dist/
 mcp-server/node_modules/
+mcp-server/evidence_index.json
 
 # Common generated/local workflow folders
 role_briefs/

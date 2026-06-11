@@ -2,6 +2,8 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { processJd, saveJdSnapshot } from "./tools/processJd.js";
+import { queryEvidence } from "./tools/queryEvidence.js";
+import { rebuildEvidenceIndex } from "./tools/rebuildIndex.js";
 
 const server = new McpServer({
   name: "resume-tailoring-mcp",
@@ -37,6 +39,29 @@ server.tool(
   },
   async ({ company, role, link, source, cleanedContent }) => {
     const result = await saveJdSnapshot({ company, role, link, source, cleanedContent });
+    return { content: [{ type: "text", text: result }] };
+  }
+);
+
+server.tool(
+  "query_evidence",
+  "Query the local evidence index using semantic similarity to find the most relevant evidence files for a given JD. Returns top-N ranked file paths with similarity scores. Run rebuild_evidence_index first if the index does not exist.",
+  {
+    jdText: z.string().describe("The full job description text to match against the evidence bank"),
+    topN: z.number().optional().describe("Number of top results to return (default: 6)"),
+  },
+  async ({ jdText, topN }) => {
+    const result = await queryEvidence(jdText, topN ?? 6);
+    return { content: [{ type: "text", text: result }] };
+  }
+);
+
+server.tool(
+  "rebuild_evidence_index",
+  "Rebuild the local evidence index by embedding all .md files in the configured evidencePath. Run this once after initial setup and again whenever evidence files are added or significantly updated.",
+  {},
+  async () => {
+    const result = await rebuildEvidenceIndex();
     return { content: [{ type: "text", text: result }] };
   }
 );

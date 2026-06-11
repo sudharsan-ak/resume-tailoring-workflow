@@ -6,6 +6,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export interface Config {
   workflowRoot: string;
+  evidencePath?: string;
 }
 
 let _config: Config | null = null;

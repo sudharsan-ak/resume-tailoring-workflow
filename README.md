@@ -31,8 +31,10 @@ If the workflow feels hard to follow at first, ask the assistant to read the rep
 | Fit Check | `Fit check this role.` | Score table: Initial, Tailored, Verdict |
 | Suggest Changes | `Suggest changes.` | Angle, bullet swaps, skill cuts, gaps |
 | Tailor + Build | `Tailor the PDF.` | Role-specific `.tex` + compiled PDF |
+| Eval Pass | Auto-runs after every build | Flagged bullets table, metric coverage, optional fixes |
 | Recruiter Outreach | `Draft recruiter outreach.` | Role brief + outreach draft |
 | Fresh Job Search | `Find 10 fresh roles.` | Scored list, no duplicates |
+| Autopilot | `Autopilot this role.` | Full end-to-end flow with one human checkpoint |
 
 ---
 
@@ -110,11 +112,18 @@ Use the sample files. Fit check sample/sample_job_description.md against the sam
 
 ---
 
-## Optional: MCP Server (Job Link Fetching)
+## Optional: MCP Server
 
-The `mcp-server/` folder adds an optional MCP server for Claude Code and Codex sidebars. Its only job is **URL fetching** — it uses a headless browser to pull the full rendered JD from any ATS site (Greenhouse, Lever, Ashby, and others that block normal web fetch). The sidebar AI then cleans the raw text and saves a structured snapshot to `workflow_state/fresh_job_jds/`.
+The `mcp-server/` folder adds an optional MCP server for Claude Code and Codex sidebars. It exposes three tools:
 
-Without it, you copy-paste the JD text into the chat manually. With it, you drop a URL and the fetch happens automatically.
+### `process_jd` - Headless JD Fetching
+Uses a headless browser to pull the full rendered JD from any ATS site (Greenhouse, Lever, Ashby, and others that block normal web fetch). Without it, you copy-paste JD text manually. With it, you drop a URL and the fetch happens automatically.
+
+### `query_evidence` - Local RAG for Evidence Retrieval
+Queries your local evidence bank using semantic similarity. At suggest-changes time, the AI calls this tool with the full JD text and gets back the top 6 most relevant evidence files ranked by content overlap - no manual routing needed. Runs entirely on-device using a local embedding model (`all-MiniLM-L6-v2` via `@xenova/transformers`). No API key, no external service, no internet required after the first model download.
+
+### `rebuild_evidence_index` - Index Builder
+Reads all evidence files, embeds them, and writes a local `evidence_index.json` to disk. Run once after setup and again whenever you add or update evidence files. The index persists across sessions - no re-embedding needed on every startup.
 
 See [docs/mcp-setup.md](docs/mcp-setup.md) for setup instructions.
 
@@ -122,5 +131,5 @@ See [docs/mcp-setup.md](docs/mcp-setup.md) for setup instructions.
 
 ## Built With
 
-- [Claude Code](https://claude.ai/code) — Anthropic
-- [Codex](https://platform.openai.com/docs/codex) — OpenAI
+- [Claude Code](https://claude.ai/code) - Anthropic
+- [Codex](https://platform.openai.com/docs/codex) - OpenAI
