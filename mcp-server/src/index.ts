@@ -45,13 +45,30 @@ server.tool(
 
 server.tool(
   "query_evidence",
-  "Query the local evidence index using semantic similarity to find the most relevant evidence files for a given JD. Returns top-N ranked file paths with similarity scores. Run rebuild_evidence_index first if the index does not exist.",
+  "Query the local evidence index using semantic similarity to find the most relevant evidence files for a given JD. Filter by experience or projects so one category cannot crowd out the other. Run rebuild_evidence_index first if the index does not exist.",
   {
     jdText: z.string().describe("The full job description text to match against the evidence bank"),
     topN: z.number().optional().describe("Number of top results to return (default: 6)"),
+    evidenceCategory: z.enum(["all", "experience", "projects"]).optional().describe(
+      "Evidence category to search: experience, projects, or all (default: all)"
+    ),
+    experienceTopN: z.number().optional().describe(
+      "Return this many top experience files in one category-aware result"
+    ),
+    projectTopN: z.number().optional().describe(
+      "Return this many top project files in one category-aware result"
+    ),
   },
-  async ({ jdText, topN }) => {
-    const result = await queryEvidence(jdText, topN ?? 6);
+  async ({ jdText, topN, evidenceCategory, experienceTopN, projectTopN }) => {
+    const categoryAwareLimits = experienceTopN !== undefined || projectTopN !== undefined
+      ? { experienceTopN: experienceTopN ?? 6, projectTopN: projectTopN ?? 4 }
+      : undefined;
+    const result = await queryEvidence(
+      jdText,
+      topN ?? 6,
+      evidenceCategory ?? "all",
+      categoryAwareLimits
+    );
     return { content: [{ type: "text", text: result }] };
   }
 );
