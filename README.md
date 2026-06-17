@@ -114,7 +114,7 @@ Use the sample files. Fit check sample/sample_job_description.md against the sam
 
 ## Optional: MCP Server
 
-The `mcp-server/` folder adds an optional MCP server for Claude Code and Codex sidebars. It exposes three tools:
+The `mcp-server/` folder adds an optional MCP server for Claude Code and Codex sidebars. It exposes 5 tools:
 
 ### `process_jd` - Headless JD Fetching
 Uses a headless browser to pull the full rendered JD from any ATS site (Greenhouse, Lever, Ashby, and others that block normal web fetch). Without it, you copy-paste JD text manually. With it, you drop a URL and the fetch happens automatically.
