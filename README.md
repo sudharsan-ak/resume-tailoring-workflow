@@ -125,6 +125,22 @@ Queries your local evidence bank using semantic similarity. At suggest-changes t
 ### `rebuild_evidence_index` - Index Builder
 Reads all evidence files, embeds them, and writes a local `evidence_index.json` to disk. Run once after setup and again whenever you add or update evidence files. The index persists across sessions - no re-embedding needed on every startup.
 
+### `scan_rejections` - Gmail Rejection Scanner
+Scans your Gmail rejections label for the last N days and returns raw company + rejection date rows, plus a set of already-logged `company|role` keys from your Rejections Log sheet for dedup. You resolve role title, applied date, and stage via Gmail before writing. Requires Gmail OAuth and a Google Sheet — see `.env` setup below.
+
+### `write_rejections` - Rejection Log Writer
+Appends approved rejection rows to your Rejections Log Google Sheet. Called only after you review and approve the resolved table — never writes automatically.
+
+### `get_rejection_patterns` - Rejection Trend Reader
+Reads your Rejections Log sheet and returns a stage breakdown, average days to rejection, top rejected companies, and top rejected roles. Used at the start of suggest-changes sessions to calibrate tailoring posture.
+
+**Rejection tracking setup:** Create a `mcp-server/.env` file (gitignored) with:
+```
+REJECTIONS_SHEET_ID=your_google_sheet_id
+REJECTIONS_GID=your_sheet_tab_gid
+```
+Run `node mcp-server/auth-gmail.mjs` once to authorize Gmail + Sheets access.
+
 See [docs/mcp-setup.md](docs/mcp-setup.md) for setup instructions.
 
 ---
