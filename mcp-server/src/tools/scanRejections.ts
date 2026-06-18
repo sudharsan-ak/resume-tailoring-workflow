@@ -2,9 +2,12 @@ import { readFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { google } from "googleapis";
-import "dotenv/config";
+import dotenv from "dotenv";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+dotenv.config({ path: resolve(__dirname, "../../.env") });
+
 const TOKEN_PATH = resolve(__dirname, "../../gmail-token.json");
 const CREDS_PATH = resolve(__dirname, "../../credentials.json");
 
