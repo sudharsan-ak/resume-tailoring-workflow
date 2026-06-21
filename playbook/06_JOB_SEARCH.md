@@ -6,8 +6,11 @@ Job-search results can become private workflow data. Store real findings under i
 
 ## Inputs
 
-- `workflow_state/profile_notes.md` or `sample/sample_profile_notes.md`
-- `workflow_state/resume_digest.md` or `sample/sample_resume_digest.md`
+For demo runs, use sample files per `playbook/00_INDEX.md`.
+
+Real local inputs:
+- `workflow_state/profile_notes.md`
+- `workflow_state/resume_digest.md`
 - `workflow_state/bullet_index.md` only if exact verification is needed
 
 ## Search Window
@@ -37,6 +40,14 @@ Rules:
 - If the original employer or ATS link is dead, inaccessible, or no longer shows the role, drop the role.
 - Do not fall back to a Jobright wrapper link when the original link is dead.
 - Do not score or save a role unless the original employer/ATS JD is readable enough to evaluate.
+
+## JD Fetching
+
+Use native web fetch when it returns the complete JD body. If native fetch returns a 403, partial content, navigation garbage, a JavaScript render error, or anything that is not the actual job description, use a headless browser fetch tool if available (such as an MCP tool configured for the workflow).
+
+- Treat the headless fetch as a read-only extraction tool that returns raw page text
+- Clean the returned text before scoring or saving a snapshot
+- If headless fetch is also unavailable, use native fetch as fallback and clearly state any missing JD content
 
 ## JD-First Rule
 

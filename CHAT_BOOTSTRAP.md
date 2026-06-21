@@ -54,11 +54,13 @@ Next options:
 Prompt -> stage doc:
 
 - `check next roles`, `rank these roles`, `fit check` -> `playbook/01_FIT_CHECK.md`
-- `search N jobs`, `find fresh jobs`, `latest jobs`, `next N jobs` -> `playbook/06_JOB_SEARCH.md`
 - `suggest changes`, `exact bullet changes`, `show the table` -> `playbook/02_SUGGEST_CHANGES.md`
-- `tailor the pdf`, `generate pdf`, `build pdf`, `tailor all N` -> `playbook/03_TAILOR_BUILD.md`
-- `draft outreach`, `create recruiter drafts`, `email these recruiters` -> `playbook/04_GMAIL_OUTREACH.md`
-- maintenance, evidence refresh, build troubleshooting -> `playbook/05_MAINTENANCE.md`
+- `tailor the pdf`, `generate pdf`, `build pdf`, `tailor all N`, `straight to tailoring` -> `playbook/03_TAILOR_BUILD.md`
+- `draft outreach`, `draft gmail`, `create recruiter drafts`, `email these recruiters` -> `playbook/04_GMAIL_OUTREACH.md`
+- maintenance, evidence refresh, build troubleshooting, first-time setup -> `playbook/05_MAINTENANCE.md`
+- `search N jobs`, `find fresh jobs`, `latest jobs`, `next N jobs` -> `playbook/06_JOB_SEARCH.md`
+- eval runs automatically after every build; `eval detail [role]`, `fix [role] flagged` -> `playbook/07_EVAL.md`
+- `auto tailor`, `autopilot this role`, `process this role end to end`, `end to end` -> `playbook/08_AUTOPILOT.md`
 - application form questions -> answer directly unless the user asks for a stage doc.
 
 ## Fresh Chat Usage

@@ -6,7 +6,8 @@ Use this index to select the smallest stage document needed for the user's curre
 
 - The public repo contains workflow logic and fake samples only.
 - Real resumes, real evidence, real role briefs, generated PDFs, recruiter notes, tokens, and credentials stay outside Git.
-- Prefer `sample/` files for demos and the mirrored ignored workflow folders for real local runs.
+- Use `sample/` files only for demos.
+- For real runs, use the ignored mirrored folders: `input/`, `evidence/`, `workflow_state/`, `Gmail/role_briefs/`, and `output/`.
 - Be honest about fit. Do not turn weak alignment into resume theater.
 - Never invent experience, metrics, tools, scope, titles, companies, education, awards, or sponsorship status.
 - Use token budget on decisions that change the final artifact.
@@ -14,19 +15,23 @@ Use this index to select the smallest stage document needed for the user's curre
 ## Stage Selection
 
 - Fit check / ranking: `01_FIT_CHECK.md`
-  - Triggers: `check next roles`, `rank these roles`, `fit check`
+  - Triggers: `check next role`, `check JD`, `rank these roles`, `fit check`
 - Suggest changes: `02_SUGGEST_CHANGES.md`
   - Triggers: `suggest changes`, `exact bullet changes`, `show the table`
 - Tailor + build PDF: `03_TAILOR_BUILD.md`
-  - Triggers: `tailor the pdf`, `generate pdf`, `build pdf`, `tailor all N`
+  - Triggers: `tailor the pdf`, `generate pdf`, `build pdf`, `tailor all`, `straight to tailoring`
 - Recruiter outreach: `04_GMAIL_OUTREACH.md`
-  - Triggers: `draft outreach`, `create recruiter drafts`, `email these recruiters`
+  - Triggers: `draft outreach`, `draft gmail`, `create recruiter drafts`, `email these recruiters`
 - Maintenance: `05_MAINTENANCE.md`
   - Triggers: evidence refresh, build troubleshooting, privacy check, state cleanup
 - First-time setup from resume PDF: `05_MAINTENANCE.md`
   - Triggers: `set up from my resume PDF`, `create the initial workflow files`, `bootstrap my resume evidence`
 - Fresh job search: `06_JOB_SEARCH.md`
   - Triggers: `search N jobs`, `find fresh jobs`, `latest jobs`, `next N jobs`
+- Eval pass: `07_EVAL.md`
+  - Triggers: runs automatically after every tailor build. Also: `eval detail [role]`, `fix [role] flagged`, `fix [role] [#]`
+- Autopilot (end to end): `08_AUTOPILOT.md`
+  - Triggers: `auto tailor`, `autopilot this role`, `process this role end to end`, `end to end`
 - Application form answers: no stage doc by default
   - Answer directly from known candidate evidence and constraints.
 

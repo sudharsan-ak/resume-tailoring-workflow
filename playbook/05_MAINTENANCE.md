@@ -2,6 +2,8 @@
 
 Use this stage for first-time setup from a resume PDF, evidence refreshes, privacy checks, build troubleshooting, and state cleanup.
 
+For demo runs, use sample files per `playbook/00_INDEX.md`.
+
 ## First-Time Setup From Resume PDF
 
 Use this when the user provides a resume PDF under `input/` and asks to create the initial workflow files.
