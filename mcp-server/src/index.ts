@@ -4,7 +4,6 @@ import { z } from "zod";
 import { processJd, saveJdSnapshot } from "./tools/processJd.js";
 import { queryEvidence } from "./tools/queryEvidence.js";
 import { rebuildEvidenceIndex } from "./tools/rebuildIndex.js";
-import { scanRejections, getRejectionPatterns, getLoggedRejectionKeys, writeRejections, RejectionRow } from "./tools/scanRejections.js";
 
 const server = new McpServer({
   name: "resume-tailoring-mcp",
@@ -80,66 +79,6 @@ server.tool(
   {},
   async () => {
     const result = await rebuildEvidenceIndex();
-    return { content: [{ type: "text", text: result }] };
-  }
-);
-
-server.tool(
-  "scan_rejections",
-  "Scan Gmail for job rejection emails from the last N days using the '01 - Job Applications > 03 - Job Rejections' label. Returns raw rows (company + rejection date) and already-logged keys from the Rejections Log sheet. Claude then searches Gmail to resolve role, applied date, and stage for each row, filters out duplicates, and presents the final table for approval before writing to the sheet.",
-  {
-    days_back: z.number().optional().describe("How many days back to scan (default: 30)"),
-  },
-  async ({ days_back }) => {
-    const [{ rows, summary }, loggedKeys] = await Promise.all([
-      scanRejections(days_back ?? 30),
-      getLoggedRejectionKeys(),
-    ]);
-
-    if (rows.length === 0) {
-      return { content: [{ type: "text", text: "No rejection emails found in the specified window." }] };
-    }
-
-    // Return raw rows + already-logged company|role keys.
-    // Claude searches Gmail to resolve role for each row, then filters out already-logged entries
-    // using company|role key (normalized lowercase). Same company + different role = new entry.
-    const output = [
-      `scan_rejections found ${rows.length} rejections in the last ${days_back ?? 30} days.`,
-      "",
-      summary,
-      "",
-      "RAW_ROWS:" + JSON.stringify(rows),
-      "LOGGED_KEYS:" + JSON.stringify([...loggedKeys]),
-    ].join("\n");
-
-    return { content: [{ type: "text", text: output }] };
-  }
-);
-
-server.tool(
-  "write_rejections",
-  "Write resolved rejection rows to the Rejections Log sheet. Call this only after the user approves the final table. Rows must be fully resolved (company, role, dateApplied, dateRejected, daysGap, stage).",
-  {
-    rows: z.string().describe("JSON array of RejectionRow objects to write to the sheet"),
-  },
-  async ({ rows }) => {
-    let parsed: RejectionRow[];
-    try {
-      parsed = JSON.parse(rows);
-    } catch {
-      return { content: [{ type: "text", text: "Invalid JSON in rows parameter." }] };
-    }
-    const result = await writeRejections(parsed);
-    return { content: [{ type: "text", text: result }] };
-  }
-);
-
-server.tool(
-  "get_rejection_patterns",
-  "Read the Rejections Log sheet and return a pattern summary: total rejections, ATS vs Human split, top rejected companies and roles, average days to rejection, and an ATS warning if ≥60% of rejections are within 3 days. Call this at the start of tailoring sessions to inform keyword and formatting strategy.",
-  {},
-  async () => {
-    const result = await getRejectionPatterns();
     return { content: [{ type: "text", text: result }] };
   }
 );

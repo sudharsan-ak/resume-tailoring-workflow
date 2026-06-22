@@ -86,6 +86,11 @@ mcp-server/dist/
 mcp-server/node_modules/
 mcp-server/evidence_index.json
 
+# Private tools — personal tracking and networking sheets, not for public repo
+mcp-server/src/index.local.ts
+mcp-server/src/tools/scanRejections.ts
+mcp-server/src/tools/writeNetworkingRows.ts
+
 # Common generated/local workflow folders
 role_briefs/
 Tailored PDFs/

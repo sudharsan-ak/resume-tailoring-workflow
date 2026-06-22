@@ -6,6 +6,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
+    "build:local": "tsc && node -e \"require('fs').copyFileSync('dist/index.local.js','dist/index.js')\"",
     "dev": "tsc --watch",
     "start": "node dist/index.js"
   },
