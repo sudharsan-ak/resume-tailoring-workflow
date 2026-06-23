@@ -90,6 +90,9 @@ mcp-server/evidence_index.json
 mcp-server/src/index.local.ts
 mcp-server/src/tools/scanRejections.ts
 mcp-server/src/tools/writeNetworkingRows.ts
+mcp-server/src/tools/writeOutliersRows.ts
+mcp-server/src/tools/linkedinSearchPool.ts
+mcp-server/src/tools/linkedinActivityCheck.ts
 
 # Common generated/local workflow folders
 role_briefs/
