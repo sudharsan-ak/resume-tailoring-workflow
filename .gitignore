@@ -94,6 +94,10 @@ mcp-server/src/tools/writeOutliersRows.ts
 mcp-server/src/tools/linkedinSearchPool.ts
 mcp-server/src/tools/linkedinActivityCheck.ts
 
+# career_scan — private job discovery tool, not for public repo
+mcp-server/src/tools/careerScan/
+mcp-server/src/tools/careerScan/snapshots/
+
 # Common generated/local workflow folders
 role_briefs/
 Tailored PDFs/
