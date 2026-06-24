@@ -102,6 +102,9 @@ mcp-server/src/tools/careerScan/snapshots/
 mcp-server/src/tools/commentDrafter/
 mcp-server/src/tools/commentDrafter/snapshots/
 
+# resumeBuilder — private resume assembly and compile tool, not for public repo
+mcp-server/src/tools/resumeBuilder/
+
 # Common generated/local workflow folders
 role_briefs/
 Tailored PDFs/
