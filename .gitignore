@@ -98,6 +98,10 @@ mcp-server/src/tools/linkedinActivityCheck.ts
 mcp-server/src/tools/careerScan/
 mcp-server/src/tools/careerScan/snapshots/
 
+# commentDrafter — private LinkedIn post comment tool, not for public repo
+mcp-server/src/tools/commentDrafter/
+mcp-server/src/tools/commentDrafter/snapshots/
+
 # Common generated/local workflow folders
 role_briefs/
 Tailored PDFs/
