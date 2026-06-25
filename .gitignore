@@ -105,6 +105,9 @@ mcp-server/src/tools/commentDrafter/snapshots/
 # resumeBuilder — private resume assembly and compile tool, not for public repo
 mcp-server/src/tools/resumeBuilder/
 
+# coverLetterBuilder — private cover letter assembly and compile tool, not for public repo
+mcp-server/src/tools/coverLetterBuilder/
+
 # Common generated/local workflow folders
 role_briefs/
 Tailored PDFs/
