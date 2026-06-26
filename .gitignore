@@ -78,7 +78,7 @@ token.json
 *.p12
 *.pfx
 
-# MCP server — local config, credentials, build output, and generated index
+# MCP server - local config, credentials, build output, and generated index
 mcp-server/config.json
 mcp-server/credentials.json
 mcp-server/gmail-token.json
@@ -86,27 +86,9 @@ mcp-server/dist/
 mcp-server/node_modules/
 mcp-server/evidence_index.json
 
-# Private tools — personal tracking and networking sheets, not for public repo
+# Private tools - entire private/ folder is local-only, never pushed
 mcp-server/src/index.local.ts
-mcp-server/src/tools/scanRejections.ts
-mcp-server/src/tools/writeNetworkingRows.ts
-mcp-server/src/tools/writeOutliersRows.ts
-mcp-server/src/tools/linkedinSearchPool.ts
-mcp-server/src/tools/linkedinActivityCheck.ts
-
-# career_scan — private job discovery tool, not for public repo
-mcp-server/src/tools/careerScan/
-mcp-server/src/tools/careerScan/snapshots/
-
-# commentDrafter — private LinkedIn post comment tool, not for public repo
-mcp-server/src/tools/commentDrafter/
-mcp-server/src/tools/commentDrafter/snapshots/
-
-# resumeBuilder — private resume assembly and compile tool, not for public repo
-mcp-server/src/tools/resumeBuilder/
-
-# coverLetterBuilder — private cover letter assembly and compile tool, not for public repo
-mcp-server/src/tools/coverLetterBuilder/
+mcp-server/src/tools/private/
 
 # Common generated/local workflow folders
 role_briefs/

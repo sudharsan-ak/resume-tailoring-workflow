@@ -2,10 +2,10 @@ import { readFileSync, writeFileSync, readdirSync, statSync } from "fs";
 import { resolve, join, extname, basename } from "path";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
-import { getConfig } from "../config.js";
+import { getConfig } from "../../config.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const INDEX_PATH = resolve(__dirname, "../../evidence_index.json");
+const INDEX_PATH = resolve(__dirname, "../../../evidence_index.json");
 
 interface EvidenceEntry {
   file: string;

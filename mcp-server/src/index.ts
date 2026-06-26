@@ -1,9 +1,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { processJd, saveJdSnapshot } from "./tools/processJd.js";
-import { queryEvidence } from "./tools/queryEvidence.js";
-import { rebuildEvidenceIndex } from "./tools/rebuildIndex.js";
+import { processJd, saveJdSnapshot } from "./tools/public/processJd.js";
+import { queryEvidence } from "./tools/public/queryEvidence.js";
+import { rebuildEvidenceIndex } from "./tools/public/rebuildIndex.js";
 
 const server = new McpServer({
   name: "resume-tailoring-mcp",

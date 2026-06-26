@@ -3,7 +3,7 @@ import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const INDEX_PATH = resolve(__dirname, "../../evidence_index.json");
+const INDEX_PATH = resolve(__dirname, "../../../evidence_index.json");
 
 export type EvidenceCategory = "all" | "experience" | "projects";
 

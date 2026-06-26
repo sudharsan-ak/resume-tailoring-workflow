@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import { join } from "path";
-import { workflowPath } from "../config.js";
+import { workflowPath } from "../../config.js";
 
 interface ProcessJdInput {
   input: string;
