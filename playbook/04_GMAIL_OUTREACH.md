@@ -58,7 +58,7 @@ Key angles to use in middle paragraphs:
 - [Any other strong signal]
 ```
 
-All drafts for the same role read the same brief. Middle paragraph angles are written fresh per draft — different angle each time. The brief avoids re-reading the full JD for drafts 2+.
+All drafts for the same role read the same brief. Middle paragraph angles are written fresh per draft - different angle each time. The brief avoids re-reading the full JD for drafts 2+.
 
 ## Role Brief Archive Rule
 
@@ -76,7 +76,7 @@ All drafts for the same role read the same brief. Middle paragraph angles are wr
 - No dense keyword list
 - No fake familiarity with the recruiter
 - No em-dashes anywhere
-- No gap acknowledgment — do not write phrases like "I do not have direct X experience". Focus only on the strongest truthful overlap.
+- No gap acknowledgment - do not write phrases like "I do not have direct X experience". Focus only on the strongest truthful overlap.
 
 ## Email Structure
 
@@ -102,7 +102,7 @@ Never change this format.
 
 ## Closing Line Rotation
 
-Rotate closing lines across drafts — use a different one per draft:
+Rotate closing lines across drafts - use a different one per draft:
 
 - I would love to connect and learn more about the role.
 - I would love to chat if you think it's a good fit.

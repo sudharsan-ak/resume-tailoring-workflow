@@ -126,7 +126,7 @@ After compile, check page count. If the PDF overflows:
 - Remove the weakest project bullet first, regardless of which project it belongs to
 - If still over, remove the next weakest project bullet
 - Only compress or cut experience bullets after project bullets are already lean
-- Do not trim mechanically for project balance — an uneven distribution can be better than cutting the strongest evidence
+- Do not trim mechanically for project balance - an uneven distribution can be better than cutting the strongest evidence
 
 Do not weaken the most relevant evidence just to preserve project symmetry.
 

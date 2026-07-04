@@ -75,7 +75,7 @@ Run the interview only when ALL of the following are true:
 
 - Projected tailored score is 8.0 or above
 - At least one hard JD requirement (not a nice-to-have) has weak or no evidence backing in the retrieved files
-- The gap is plausibly closeable — meaning it is conceivable that undocumented work experience exists that covers it
+- The gap is plausibly closeable - meaning it is conceivable that undocumented work experience exists that covers it
 
 ### Skip Conditions
 
@@ -88,26 +88,26 @@ Do NOT run the interview when:
 
 ### How to Run
 
-Before presenting the Pass 1A output, state briefly which gaps triggered the interview and why they are worth asking about. Then ask targeted questions — maximum 4, one per identified closeable gap.
+Before presenting the Pass 1A output, state briefly which gaps triggered the interview and why they are worth asking about. Then ask targeted questions - maximum 4, one per identified closeable gap.
 
 Questions must be:
 - Tied to a specific hard JD requirement that is currently unmet or weakly met
 - Framed conversationally, not as a numbered formal list
-- Concrete: ask about specific work, outcomes, or scope — not general skill claims
+- Concrete: ask about specific work, outcomes, or scope - not general skill claims
 
-Example framing: "Before I finalize the plan, a couple of things the JD requires that aren't in your evidence files — did you work on anything that involved [X]? Even if it wasn't the primary feature, scope or outcome details here could strengthen a bullet."
+Example framing: "Before I finalize the plan, a couple of things the JD requires that aren't in your evidence files - did you work on anything that involved [X]? Even if it wasn't the primary feature, scope or outcome details here could strengthen a bullet."
 
 ### What Answers Become
 
 - Treat user answers as session-level evidence for this role only
 - Use them directly to strengthen or close the flagged gap in the Pass 1A plan
-- Do not write answers to any evidence file automatically — user decides if they want to formalize it later
+- Do not write answers to any evidence file automatically - user decides if they want to formalize it later
 - If the user answers "no" or "nothing relevant": note the gap remains, proceed with Pass 1A as normal
-- A blank or negative answer is a valid outcome — do not push for invented claims
+- A blank or negative answer is a valid outcome - do not push for invented claims
 
 ### Behavior After the Interview
 
-Incorporate confirmed answers into the Pass 1A output before presenting it. The user sees one consolidated Pass 1A — not a pre-interview draft and a post-interview draft. The interview is internal to the Stage 2 flow.
+Incorporate confirmed answers into the Pass 1A output before presenting it. The user sees one consolidated Pass 1A - not a pre-interview draft and a post-interview draft. The interview is internal to the Stage 2 flow.
 
 ---
 

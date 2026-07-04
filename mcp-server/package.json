@@ -1,7 +1,7 @@
 {
   "name": "resume-tailoring-mcp",
   "version": "1.0.0",
-  "description": "MCP server for the resume-tailoring-workflow — exposes job search, JD processing, tracker updates, resume compilation, and Gmail outreach as tools for any MCP-compatible AI assistant.",
+  "description": "MCP server for the resume-tailoring-workflow - exposes job search, JD processing, tracker updates, resume compilation, and Gmail outreach as tools for any MCP-compatible AI assistant.",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {

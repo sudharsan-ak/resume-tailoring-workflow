@@ -19,15 +19,15 @@ Build command:
 
 1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 2. Open the repo folder in VS Code
-3. VS Code will prompt "Reopen in Container" — click it
+3. VS Code will prompt "Reopen in Container" - click it
 4. The container starts with TeX Live, PowerShell, `pdflatex`, `xelatex`, and `lualatex` pre-installed
 5. Run the scripts exactly as you would locally
 
 **Custom fonts (Inter, etc.):**
 
 1. Download your font files (`.ttf` or `.otf`)
-2. Drop them into the `fonts/` folder (gitignored — stays local)
-3. Rebuild the container — it auto-installs the fonts via `fc-cache`
+2. Drop them into the `fonts/` folder (gitignored - stays local)
+3. Rebuild the container - it auto-installs the fonts via `fc-cache`
 4. Use `xelatex` or `lualatex` as your compiler in the LaTeX Workshop recipe picker
 
 ## Option 3: Overleaf (No Install)
@@ -37,7 +37,7 @@ Build command:
 3. Click **New Project -> Blank Project**
 4. Replace the default content with your `.tex` file
 5. If using custom fonts, upload your font files to the Overleaf project
-6. Click **Compile** — download the PDF
+6. Click **Compile** - download the PDF
 
 Overleaf supports `pdflatex`, `xelatex`, and `lualatex`. Switch compilers under **Menu -> Compiler**.
 
@@ -51,8 +51,8 @@ Overleaf supports `pdflatex`, `xelatex`, and `lualatex`. Switch compilers under 
 
 ## Helper Tools (Optional)
 
-- `latexmk` — manages multi-pass builds automatically
-- `pdfinfo` — lets the build script verify the output page count
+- `latexmk` - manages multi-pass builds automatically
+- `pdfinfo` - lets the build script verify the output page count
 
 ## Requirements Summary
 

@@ -11,7 +11,7 @@ After compile confirms 1 page. Before reporting the final result to the user.
 
 ## What to Evaluate
 
-Every bullet in the compiled `.tex` file — experience and project sections both.
+Every bullet in the compiled `.tex` file - experience and project sections both.
 
 Do NOT eval: summary line, skills section, education, section headers, job titles, dates.
 
@@ -21,13 +21,13 @@ Experience bullets and project bullets are evaluated differently.
 
 ---
 
-### Experience Bullets — Three Checks
+### Experience Bullets - Three Checks
 
 #### 1. JD Match
 
 Does the bullet map to one of the top 3 requirements or responsibilities from the JD?
 
-- Use the JD context already in the current chat — do not re-read the JD
+- Use the JD context already in the current chat - do not re-read the JD
 - Pass: bullet addresses a core JD skill, responsibility, or keyword
 - Fail: bullet is generic, stack-agnostic, or addresses something the JD does not care about
 - Exception: bullets that establish credibility (team lead, scale, production ownership) pass even without a direct JD keyword match
@@ -49,7 +49,7 @@ Does the bullet open with a strong, specific action verb?
 
 ---
 
-### Project Bullets — Three Checks
+### Project Bullets - Three Checks
 
 #### 1. Resume Value
 
@@ -60,7 +60,7 @@ Does this bullet add genuine lift to the resume for this specific role?
 
 #### 2. Length
 
-Same as experience bullets — based on actual PDF render.
+Same as experience bullets - based on actual PDF render.
 
 #### 3. Verb
 
@@ -68,13 +68,13 @@ Same as experience bullets.
 
 ---
 
-### Metric Coverage — Summary Stat Only
+### Metric Coverage - Summary Stat Only
 
 Do NOT flag individual bullets for missing metrics. Instead, count how many experience bullets contain a concrete number, percentage, scale, or outcome, and report it as a single summary line.
 
 - Count only experience bullets, not project bullets
 - Report as: `Metric coverage: X of Y experience bullets have a metric (Z%)`
-- No threshold or flag — this is an observation only, not a pass/fail
+- No threshold or flag - this is an observation only, not a pass/fail
 
 ---
 
@@ -118,22 +118,22 @@ Skills: PASS (all backed) | FAIL (specific skill with no backing)
 Metric coverage: X/Y (Z%).
 ```
 
-**Zero flags — single line:**
+**Zero flags - single line:**
 
 ```text
-Eval Pass — Resume is ready. Summary: PASS. Skills: PASS. Metric coverage: X/Y (Z%).
+Eval Pass - Resume is ready. Summary: PASS. Skills: PASS. Metric coverage: X/Y (Z%).
 ```
 
 ---
 
 ## Flag Values
 
-- `VERB` — weak opening verb
-- `JD MISS` — does not map to JD requirements
-- `LONG` — exceeds 2 lines in rendered PDF
-- `VALUE` — project bullet adds no genuine lift (project bullets only)
-- `SUMMARY` — summary is generic or undersells fit
-- `SKILL` — skill listed with no supporting bullet evidence
+- `VERB` - weak opening verb
+- `JD MISS` - does not map to JD requirements
+- `LONG` - exceeds 2 lines in rendered PDF
+- `VALUE` - project bullet adds no genuine lift (project bullets only)
+- `SUMMARY` - summary is generic or undersells fit
+- `SKILL` - skill listed with no supporting bullet evidence
 - Combine with `/` if multiple: `VERB/JD MISS`
 
 ---
@@ -152,7 +152,7 @@ Eval Detail - Company - Role
 ```
 
 Notes on proposed fixes:
-- Keep the same meaning and evidence — do not invent claims or metrics
+- Keep the same meaning and evidence - do not invent claims or metrics
 - For VERB: show the full rewritten opening
 - For JD MISS where no better evidence exists: write `Credibility bullet - accept or swap if evidence supports it`
 - For LENGTH: show a compressed version that fits 2 lines
@@ -164,8 +164,8 @@ Notes on proposed fixes:
 - Always declare the resume complete and ready after reporting eval results, whether it has zero flags or more
 - Flags are non-blocking optional improvements. The user may proceed with the current tailored resume without accepting or fixing them.
 - Do NOT apply any flagged fix until the user explicitly requests it
-- `fix [role] flagged` — apply all proposed fixes for that role
-- `fix [role] [#]` — apply only the proposed fix for that row number
+- `fix [role] flagged` - apply all proposed fixes for that role
+- `fix [role] [#]` - apply only the proposed fix for that row number
 - After applying any fix: recompile, confirm the PDF is still exactly 1 page, and verify only the changed bullets
 - Do not run the full eval again after fixes. Report the limited verification result and keep the resume marked complete.
 

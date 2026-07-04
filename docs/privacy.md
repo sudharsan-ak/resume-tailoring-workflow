@@ -38,4 +38,4 @@ git status --short
 
 ## How the Repo Is Structured for Privacy
 
-Real populated files are gitignored by default. The repo only tracks templates, rules, scripts, and fake sample data. The reusable part is the system — not the evidence.
+Real populated files are gitignored by default. The repo only tracks templates, rules, scripts, and fake sample data. The reusable part is the system - not the evidence.

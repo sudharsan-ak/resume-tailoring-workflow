@@ -4,13 +4,13 @@ This guide walks you through setting up the `mcp-server/` so any MCP-compatible 
 
 ## Prerequisites
 
-- Node.js 18 or later — [download](https://nodejs.org/)
-- LaTeX installed locally (MiKTeX on Windows, TeX Live on macOS/Linux) — see [latex-setup.md](latex-setup.md)
-- A Google Cloud project with the Gmail API enabled (for `create_draft` only — skip if you do not need outreach drafts)
+- Node.js 18 or later - [download](https://nodejs.org/)
+- LaTeX installed locally (MiKTeX on Windows, TeX Live on macOS/Linux) - see [latex-setup.md](latex-setup.md)
+- A Google Cloud project with the Gmail API enabled (for `create_draft` only - skip if you do not need outreach drafts)
 
 ---
 
-## Step 1 — Install and build
+## Step 1 - Install and build
 
 ```bash
 cd mcp-server
@@ -22,7 +22,7 @@ This compiles the TypeScript source to `mcp-server/dist/`. You only need to run 
 
 ---
 
-## Step 2 — Create your config file
+## Step 2 - Create your config file
 
 Copy the example config and fill in your local paths:
 
@@ -48,7 +48,7 @@ Edit `mcp-server/config.json`:
 
 ---
 
-## Step 3 — Gmail OAuth setup (optional — only for create_draft)
+## Step 3 - Gmail OAuth setup (optional - only for create_draft)
 
 Skip this step if you do not plan to use the `create_draft` tool.
 
@@ -71,7 +71,7 @@ This opens a browser window for you to authorize Gmail access. After authorizing
 
 ---
 
-## Step 4 — Register the MCP server in your AI assistant
+## Step 4 - Register the MCP server in your AI assistant
 
 ### Claude Code (VS Code sidebar)
 
@@ -92,7 +92,7 @@ Replace the path with the absolute path to `mcp-server/dist/index.js` on your ma
 
 ### Codex (VS Code sidebar)
 
-Add the MCP server under your Codex MCP configuration. The exact location depends on your Codex extension version — look for an `mcpServers` or `tools` section in Codex settings:
+Add the MCP server under your Codex MCP configuration. The exact location depends on your Codex extension version - look for an `mcpServers` or `tools` section in Codex settings:
 
 ```json
 {
@@ -107,15 +107,15 @@ Add the MCP server under your Codex MCP configuration. The exact location depend
 
 ---
 
-## Step 5 — Verify the server is running
+## Step 5 - Verify the server is running
 
 Restart your VS Code window after updating settings. In the Claude Code or Codex sidebar, the AI assistant should now list these tools as available:
 
-- `process_jd` — process a JD from text, URL, or JD Text.md
-- `search_roles` — search for fresh job postings
-- `update_tracker` — append scored roles to the fit check table
-- `compile_resume` — compile a .tex file to PDF
-- `create_draft` — create a Gmail outreach draft
+- `process_jd` - process a JD from text, URL, or JD Text.md
+- `search_roles` - search for fresh job postings
+- `update_tracker` - append scored roles to the fit check table
+- `compile_resume` - compile a .tex file to PDF
+- `create_draft` - create a Gmail outreach draft
 
 If the tools do not appear, check the Output panel in VS Code for MCP server errors.
 

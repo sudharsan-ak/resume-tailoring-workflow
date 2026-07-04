@@ -17,9 +17,9 @@ server.tool(
     input: z.string().describe(
       "One of: (1) a URL to a live job posting, (2) full JD text pasted directly, or (3) the string 'next' to process the next entry in JD Text.md"
     ),
-    company: z.string().optional().describe("Company name — required when input is a URL or raw JD text"),
-    role: z.string().optional().describe("Role title — required when input is a URL or raw JD text"),
-    jdContent: z.string().optional().describe("Clean JD text to use instead of fetching the URL — use when you already have the text"),
+    company: z.string().optional().describe("Company name - required when input is a URL or raw JD text"),
+    role: z.string().optional().describe("Role title - required when input is a URL or raw JD text"),
+    jdContent: z.string().optional().describe("Clean JD text to use instead of fetching the URL - use when you already have the text"),
   },
   async ({ input, company, role, jdContent }) => {
     const result = await processJd({ input, company, role, jdContent });
