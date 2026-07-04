@@ -63,7 +63,7 @@ texput.log
 # Local working files
 JD Text.md
 
-# Custom fonts — drop .ttf/.otf files here for xelatex/lualatex builds
+# Custom fonts - drop .ttf/.otf files here for xelatex/lualatex builds
 # The fonts/ folder itself is committed (via .gitkeep); font files are not
 fonts/*
 !fonts/.gitkeep
