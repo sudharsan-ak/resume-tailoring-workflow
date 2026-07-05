@@ -17,6 +17,8 @@ interface EvidenceEntry {
 export interface CategoryAwareLimits {
   experienceTopN: number;
   projectTopN: number;
+  fullTextExperienceTopN?: number;
+  fullTextProjectTopN?: number;
 }
 
 interface ScoredEvidence {
@@ -59,6 +61,46 @@ function formatResults(results: ScoredEvidence[], label: string): string {
   return `Top ${results.length} ${label} evidence files for this JD:\n\n${lines.join("\n\n")}`;
 }
 
+function titleLine(result: ScoredEvidence): string {
+  let text = result.preview;
+  try {
+    text = readFileSync(result.file, "utf-8");
+  } catch {
+    // fall back to indexed preview
+  }
+  const heading = text.split(/\r?\n/).find((line) => line.trim().length > 0) ?? "";
+  return heading.replace(/^#+\s*/, "").trim().slice(0, 120);
+}
+
+function formatTieredResults(results: ScoredEvidence[], label: string, fullTextN: number): string {
+  const fullEntries: string[] = [];
+  const headlineEntries: string[] = [];
+
+  results.forEach((result, index) => {
+    const rank = `${index + 1}. [${(result.score * 100).toFixed(1)}%] ${result.file}`;
+    if (index < fullTextN) {
+      let text: string;
+      try {
+        text = readFileSync(result.file, "utf-8").trim();
+      } catch {
+        text = `${result.preview.slice(0, 500)}...\n(Could not read file from disk, preview shown instead.)`;
+      }
+      fullEntries.push(`=== ${rank} ===\n${text}`);
+    } else {
+      headlineEntries.push(`${rank} | ${titleLine(result)}`);
+    }
+  });
+
+  let output = `Top ${results.length} ${label} evidence files for this JD. ` +
+    `Full text included for the top ${fullEntries.length}; do NOT re-read those files.\n\n` +
+    fullEntries.join("\n\n");
+  if (headlineEntries.length > 0) {
+    output += `\n\nHeadline only (open a file only if its title is clearly JD-relevant):\n` +
+      headlineEntries.join("\n");
+  }
+  return output;
+}
+
 export async function queryEvidence(
   jdText: string,
   topN: number = 6,
@@ -97,7 +139,10 @@ export async function queryEvidence(
     const projects = scored
       .filter((entry) => entry.category === "projects")
       .slice(0, categoryAwareLimits.projectTopN);
-    return `${formatResults(experience, "experience")}\n\n---\n\n${formatResults(projects, "project")}`;
+    const experienceFullN = categoryAwareLimits.fullTextExperienceTopN ?? 6;
+    const projectFullN = categoryAwareLimits.fullTextProjectTopN ?? 3;
+    return `${formatTieredResults(experience, "experience", experienceFullN)}\n\n---\n\n` +
+      formatTieredResults(projects, "project", projectFullN);
   }
 
   const filtered = evidenceCategory === "all"
