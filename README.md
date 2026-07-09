@@ -114,34 +114,14 @@ Use the sample files. Fit check sample/sample_job_description.md against the sam
 
 ## Optional: MCP Server
 
-The `mcp-server/` folder adds an optional MCP server for Claude Code and Codex sidebars. It exposes 5 tools:
+The `mcp-server/` folder adds an optional MCP server for Claude Code and Codex sidebars. It exposes 4 tools:
 
-### `process_jd` - Headless JD Fetching
-Uses a headless browser to pull the full rendered JD from any ATS site (Greenhouse, Lever, Ashby, and others that block normal web fetch). Without it, you copy-paste JD text manually. With it, you drop a URL and the fetch happens automatically.
+- **`process_jd`** - headless-browser JD fetching from a URL, or pasted text directly
+- **`save_jd_snapshot`** - saves a cleaned JD into `workflow_state/fresh_job_jds/`
+- **`query_evidence`** - local semantic search (on-device embedding model, no API key) over your evidence bank for a given JD
+- **`rebuild_evidence_index`** - re-embeds evidence files into the local index
 
-### `query_evidence` - Local RAG for Evidence Retrieval
-Queries your local evidence bank using semantic similarity. At suggest-changes time, the AI calls this tool with the full JD text and gets back the top 6 most relevant evidence files ranked by content overlap - no manual routing needed. Runs entirely on-device using a local embedding model (`all-MiniLM-L6-v2` via `@xenova/transformers`). No API key, no external service, no internet required after the first model download.
-
-### `rebuild_evidence_index` - Index Builder
-Reads all evidence files, embeds them, and writes a local `evidence_index.json` to disk. Run once after setup and again whenever you add or update evidence files. The index persists across sessions - no re-embedding needed on every startup.
-
-### `scan_rejections` - Gmail Rejection Scanner
-Scans your Gmail rejections label for the last N days and returns raw company + rejection date rows, plus a set of already-logged `company|role` keys from your Rejections Log sheet for dedup. You resolve role title, applied date, and stage via Gmail before writing. Requires Gmail OAuth and a Google Sheet - see `.env` setup below.
-
-### `write_rejections` - Rejection Log Writer
-Appends approved rejection rows to your Rejections Log Google Sheet. Called only after you review and approve the resolved table - never writes automatically.
-
-### `get_rejection_patterns` - Rejection Trend Reader
-Reads your Rejections Log sheet and returns a stage breakdown, average days to rejection, top rejected companies, and top rejected roles. Used at the start of suggest-changes sessions to calibrate tailoring posture.
-
-**Rejection tracking setup:** Create a `mcp-server/.env` file (gitignored) with:
-```
-REJECTIONS_SHEET_ID=your_google_sheet_id
-REJECTIONS_GID=your_sheet_tab_gid
-```
-Run `node mcp-server/auth-gmail.mjs` once to authorize Gmail + Sheets access.
-
-See [docs/mcp-setup.md](docs/mcp-setup.md) for setup instructions.
+See [docs/tools.md](docs/tools.md) for parameters, examples, and how each tool works. Setup: [docs/mcp-setup.md](docs/mcp-setup.md).
 
 ---
 

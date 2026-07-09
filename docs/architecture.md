@@ -67,6 +67,17 @@ Purpose:
 
 Note: `JD Text.md` is committed as a public template. Restore it before committing if you paste a real JD into it.
 
+### Optional: Learned Patterns Layer
+
+Two more local, private, optional files can feed into Stage 2 via `query_evidence`, on top of the evidence bank:
+
+```text
+Shared Memory/tailoring_patterns.md    (or wherever you point it)
+Shared Memory/winning_patterns.json    (or wherever you point it)
+```
+
+`tailoring_patterns.md` holds reusable trigger-based rules distilled from past tailoring sessions. `winning_patterns.json` holds a log of applications that produced a real callback, with the JD signals and resume choices that likely contributed. Both are read-only from `query_evidence`'s perspective - nothing in the public build writes or curates them for you. See [patterns-setup.md](patterns-setup.md) for file formats, how to turn the flags on, and how to keep them current as your own job search progresses.
+
 ## Workflow Data Flow
 
 ```text

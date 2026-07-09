@@ -45,7 +45,7 @@ server.tool(
 
 server.tool(
   "query_evidence",
-  "Query the local evidence index using semantic similarity to find the most relevant evidence files for a given JD. Filter by experience or projects so one category cannot crowd out the other. Run rebuild_evidence_index first if the index does not exist.",
+  "Query the local evidence index using semantic similarity to find the most relevant evidence files for a given JD. Filter by experience or projects so one category cannot crowd out the other. Run rebuild_evidence_index first if the index does not exist. Optionally also surfaces tailoring_patterns.md and winning_patterns.json if you maintain them - see docs/patterns-setup.md.",
   {
     jdText: z.string().describe("The full job description text to match against the evidence bank"),
     topN: z.number().optional().describe("Number of top results to return (default: 6)"),
@@ -58,8 +58,20 @@ server.tool(
     projectTopN: z.number().optional().describe(
       "Return this many top project files in one category-aware result"
     ),
+    alreadyFullText: z.array(z.string()).optional().describe(
+      "Filenames (short form, e.g. E01_example.md - as returned in results, not full paths) already returned full-text earlier in this chat (e.g. from a prior role in the same batch) - skip reprinting their body, return rank/score only"
+    ),
+    includeWinningPatterns: z.boolean().optional().describe(
+      "First role of the chat only: also return a compact copy of Shared Memory/winning_patterns.json, if you maintain one (see docs/patterns-setup.md). No-op if the file does not exist. Do not pass true again later in the same chat - the content is already in context."
+    ),
+    includeTailoringPatterns: z.boolean().optional().describe(
+      "Call every role: also return the top JD-relevant entries from Shared Memory/tailoring_patterns.md, if you maintain one (see docs/patterns-setup.md), ranked the same way as evidence. No-op if the file or its index does not exist. Pass alreadyPatterns to skip reprinting patterns already surfaced earlier in this chat."
+    ),
+    alreadyPatterns: z.array(z.string()).optional().describe(
+      "Pattern IDs (e.g. P-001) already returned full-text earlier in this chat - skip reprinting, return rank/ID only"
+    ),
   },
-  async ({ jdText, topN, evidenceCategory, experienceTopN, projectTopN }) => {
+  async ({ jdText, topN, evidenceCategory, experienceTopN, projectTopN, alreadyFullText, includeWinningPatterns, includeTailoringPatterns, alreadyPatterns }) => {
     const categoryAwareLimits = experienceTopN !== undefined || projectTopN !== undefined
       ? { experienceTopN: experienceTopN ?? 6, projectTopN: projectTopN ?? 4 }
       : undefined;
@@ -67,7 +79,11 @@ server.tool(
       jdText,
       topN ?? 6,
       evidenceCategory ?? "all",
-      categoryAwareLimits
+      categoryAwareLimits,
+      alreadyFullText,
+      includeWinningPatterns,
+      includeTailoringPatterns,
+      alreadyPatterns
     );
     return { content: [{ type: "text", text: result }] };
   }

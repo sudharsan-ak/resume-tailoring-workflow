@@ -85,6 +85,7 @@ mcp-server/gmail-token.json
 mcp-server/dist/
 mcp-server/node_modules/
 mcp-server/evidence_index.json
+mcp-server/tailoring_patterns_index.json
 
 # Private tools - entire private/ folder is local-only, never pushed
 mcp-server/src/index.local.ts

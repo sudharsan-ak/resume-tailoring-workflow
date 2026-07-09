@@ -4,6 +4,17 @@ import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const INDEX_PATH = resolve(__dirname, "../../../evidence_index.json");
+const WINNING_PATTERNS_PATH = resolve(__dirname, "../../../../../Shared Memory/winning_patterns.json");
+const PATTERNS_INDEX_PATH = resolve(__dirname, "../../../tailoring_patterns_index.json");
+
+interface PatternIndexEntry {
+  id: string;
+  type: string;
+  title: string;
+  block: string;
+  trigger: string;
+  vector: number[];
+}
 
 export type EvidenceCategory = "all" | "experience" | "projects";
 
@@ -53,9 +64,13 @@ function inferCategory(entry: EvidenceEntry): Exclude<EvidenceCategory, "all"> {
   return /[\\/]evidence[\\/]projects[\\/]/i.test(entry.file) ? "projects" : "experience";
 }
 
+function shortLabel(file: string): string {
+  return file.split(/[\\/]/).pop() ?? file;
+}
+
 function formatResults(results: ScoredEvidence[], label: string): string {
   const lines = results.map((result, index) =>
-    `${index + 1}. [${(result.score * 100).toFixed(1)}%] ${result.file}\n` +
+    `${index + 1}. [${(result.score * 100).toFixed(1)}%] ${shortLabel(result.file)}\n` +
     `   Preview: ${result.preview.slice(0, 150).replace(/\n/g, " ")}...`
   );
   return `Top ${results.length} ${label} evidence files for this JD:\n\n${lines.join("\n\n")}`;
@@ -72,13 +87,22 @@ function titleLine(result: ScoredEvidence): string {
   return heading.replace(/^#+\s*/, "").trim().slice(0, 120);
 }
 
-function formatTieredResults(results: ScoredEvidence[], label: string, fullTextN: number): string {
+function formatTieredResults(
+  results: ScoredEvidence[],
+  label: string,
+  fullTextN: number,
+  alreadyFullText?: Set<string>
+): string {
   const fullEntries: string[] = [];
   const headlineEntries: string[] = [];
+  const seenEntries: string[] = [];
 
   results.forEach((result, index) => {
-    const rank = `${index + 1}. [${(result.score * 100).toFixed(1)}%] ${result.file}`;
-    if (index < fullTextN) {
+    const label = shortLabel(result.file);
+    const rank = `${index + 1}. [${(result.score * 100).toFixed(1)}%] ${label}`;
+    if (alreadyFullText?.has(label) || alreadyFullText?.has(result.file)) {
+      seenEntries.push(rank);
+    } else if (index < fullTextN) {
       let text: string;
       try {
         text = readFileSync(result.file, "utf-8").trim();
@@ -94,8 +118,85 @@ function formatTieredResults(results: ScoredEvidence[], label: string, fullTextN
   let output = `Top ${results.length} ${label} evidence files for this JD. ` +
     `Full text included for the top ${fullEntries.length}; do NOT re-read those files.\n\n` +
     fullEntries.join("\n\n");
+  if (seenEntries.length > 0) {
+    output += `\n\nAlready full-text in this chat (rank/score only, do not re-fetch):\n` +
+      seenEntries.join("\n");
+  }
   if (headlineEntries.length > 0) {
     output += `\n\nHeadline only (open a file only if its title is clearly JD-relevant):\n` +
+      headlineEntries.join("\n");
+  }
+  return output;
+}
+
+// Compact (no pretty-print whitespace) - same content, lower token cost.
+// Disk file stays pretty-printed for editing; this only affects what's
+// returned into chat context.
+function loadWinningPatternsCompact(): string {
+  if (!existsSync(WINNING_PATTERNS_PATH)) {
+    return "winning_patterns.json not found.";
+  }
+  try {
+    const data = JSON.parse(readFileSync(WINNING_PATTERNS_PATH, "utf-8"));
+    return JSON.stringify(data);
+  } catch {
+    return "Failed to parse winning_patterns.json.";
+  }
+}
+
+// Flat-ranked (not category-split like experience/project - patterns don't
+// have a "guarantee some of each type" requirement the way evidence does).
+// Full text for the top N, headline (ID + title) below that, bare rank/ID for
+// anything already surfaced this chat (alreadyPatterns) regardless of tier.
+async function formatTailoringPatterns(
+  jdText: string,
+  embedder: any,
+  topN: number,
+  fullTextN: number,
+  alreadyPatterns?: Set<string>
+): Promise<string> {
+  if (!existsSync(PATTERNS_INDEX_PATH)) {
+    return "tailoring_patterns_index.json not found. Run rebuild_evidence_index (or curate_write, which rebuilds it automatically) first.";
+  }
+  let entries: PatternIndexEntry[];
+  try {
+    entries = JSON.parse(readFileSync(PATTERNS_INDEX_PATH, "utf-8"));
+  } catch {
+    return "Failed to parse tailoring_patterns_index.json.";
+  }
+  if (entries.length === 0) {
+    return "Tailoring patterns index is empty.";
+  }
+
+  const jdVector = await embed(embedder, jdText);
+  const scored = entries
+    .map((e) => ({ ...e, score: cosineSimilarity(jdVector, e.vector) }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, topN);
+
+  const fullEntries: string[] = [];
+  const headlineEntries: string[] = [];
+  const seenEntries: string[] = [];
+
+  scored.forEach((entry, index) => {
+    const rank = `${index + 1}. [${(entry.score * 100).toFixed(1)}%] ${entry.id}`;
+    if (alreadyPatterns?.has(entry.id)) {
+      seenEntries.push(rank);
+    } else if (index < fullTextN) {
+      fullEntries.push(`=== ${rank} ===\n${entry.block}`);
+    } else {
+      headlineEntries.push(`${rank} | ${entry.title}`);
+    }
+  });
+
+  let output = `Top ${scored.length} tailoring patterns for this JD. ` +
+    `Full text included for the top ${fullEntries.length}; do NOT re-read tailoring_patterns.md for those.\n\n` +
+    fullEntries.join("\n\n");
+  if (seenEntries.length > 0) {
+    output += `\n\nAlready surfaced this chat (rank/ID only, do not re-fetch):\n` + seenEntries.join("\n");
+  }
+  if (headlineEntries.length > 0) {
+    output += `\n\nHeadline only (id + title; ask if you need the full trigger/grounding for one of these):\n` +
       headlineEntries.join("\n");
   }
   return output;
@@ -105,8 +206,16 @@ export async function queryEvidence(
   jdText: string,
   topN: number = 6,
   evidenceCategory: EvidenceCategory = "all",
-  categoryAwareLimits?: CategoryAwareLimits
+  categoryAwareLimits?: CategoryAwareLimits,
+  alreadyFullText?: string[],
+  includeWinningPatterns?: boolean,
+  includeTailoringPatterns?: boolean,
+  alreadyPatterns?: string[]
 ): Promise<string> {
+  const winningPatternsBlock = includeWinningPatterns
+    ? `=== Winning Patterns (read once this chat - reuse for all later roles, do not re-fetch) ===\n${loadWinningPatternsCompact()}\n\n---\n\n`
+    : "";
+  const seenSet = alreadyFullText && alreadyFullText.length > 0 ? new Set(alreadyFullText) : undefined;
   if (!existsSync(INDEX_PATH)) {
     return "evidence_index.json not found. Run rebuild_evidence_index first to build the index.";
   }
@@ -132,6 +241,11 @@ export async function queryEvidence(
   }));
   scored.sort((a, b) => b.score - a.score);
 
+  const patternsSeenSet = alreadyPatterns && alreadyPatterns.length > 0 ? new Set(alreadyPatterns) : undefined;
+  const tailoringPatternsBlock = includeTailoringPatterns
+    ? `${await formatTailoringPatterns(jdText, embedder, 8, 4, patternsSeenSet)}\n\n---\n\n`
+    : "";
+
   if (categoryAwareLimits) {
     const experience = scored
       .filter((entry) => entry.category === "experience")
@@ -141,8 +255,9 @@ export async function queryEvidence(
       .slice(0, categoryAwareLimits.projectTopN);
     const experienceFullN = categoryAwareLimits.fullTextExperienceTopN ?? 6;
     const projectFullN = categoryAwareLimits.fullTextProjectTopN ?? 3;
-    return `${formatTieredResults(experience, "experience", experienceFullN)}\n\n---\n\n` +
-      formatTieredResults(projects, "project", projectFullN);
+    return winningPatternsBlock + tailoringPatternsBlock +
+      `${formatTieredResults(experience, "experience", experienceFullN, seenSet)}\n\n---\n\n` +
+      formatTieredResults(projects, "project", projectFullN, seenSet);
   }
 
   const filtered = evidenceCategory === "all"
@@ -153,5 +268,5 @@ export async function queryEvidence(
     return `No ${evidenceCategory} evidence files found in the index. Run rebuild_evidence_index to rebuild it.`;
   }
 
-  return formatResults(filtered.slice(0, topN), evidenceCategory);
+  return winningPatternsBlock + tailoringPatternsBlock + formatResults(filtered.slice(0, topN), evidenceCategory);
 }
