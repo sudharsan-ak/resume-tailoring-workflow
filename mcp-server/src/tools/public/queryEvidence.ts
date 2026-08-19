@@ -4,7 +4,7 @@ import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const INDEX_PATH = resolve(__dirname, "../../../evidence_index.json");
-const WINNING_PATTERNS_PATH = resolve(__dirname, "../../../../../Shared Memory/winning_patterns.json");
+const WINNING_PATTERNS_PATH = resolve(__dirname, "../../../../../Shared Memory/Winning Patterns/winning_patterns.json");
 const PATTERNS_INDEX_PATH = resolve(__dirname, "../../../tailoring_patterns_index.json");
 
 interface PatternIndexEntry {

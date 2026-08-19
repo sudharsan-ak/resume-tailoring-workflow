@@ -62,10 +62,10 @@ server.tool(
       "Filenames (short form, e.g. E01_example.md - as returned in results, not full paths) already returned full-text earlier in this chat (e.g. from a prior role in the same batch) - skip reprinting their body, return rank/score only"
     ),
     includeWinningPatterns: z.boolean().optional().describe(
-      "First role of the chat only: also return a compact copy of Shared Memory/winning_patterns.json, if you maintain one (see docs/patterns-setup.md). No-op if the file does not exist. Do not pass true again later in the same chat - the content is already in context."
+      "First role of the chat only: also return a compact copy of Shared Memory/Winning Patterns/winning_patterns.json, if you maintain one (see docs/patterns-setup.md). No-op if the file does not exist. Do not pass true again later in the same chat - the content is already in context."
     ),
     includeTailoringPatterns: z.boolean().optional().describe(
-      "Call every role: also return the top JD-relevant entries from Shared Memory/tailoring_patterns.md, if you maintain one (see docs/patterns-setup.md), ranked the same way as evidence. No-op if the file or its index does not exist. Pass alreadyPatterns to skip reprinting patterns already surfaced earlier in this chat."
+      "Call every role: also return the top JD-relevant entries from Shared Memory/Tailoring/tailoring_patterns.md, if you maintain one (see docs/patterns-setup.md), ranked the same way as evidence. No-op if the file or its index does not exist. Pass alreadyPatterns to skip reprinting patterns already surfaced earlier in this chat."
     ),
     alreadyPatterns: z.array(z.string()).optional().describe(
       "Pattern IDs (e.g. P-001) already returned full-text earlier in this chat - skip reprinting, return rank/ID only"

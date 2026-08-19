@@ -11,7 +11,7 @@ Neither file ships with this repo, and no tool writes them for you. Both are ent
 
 ## Where the files live
 
-By default, both paths are resolved relative to the workspace root as `Shared Memory/tailoring_patterns.md` and `Shared Memory/winning_patterns.json`. If you use a different folder name, update `TAILORING_PATTERNS_PATH` and `WINNING_PATTERNS_PATH` in `mcp-server/src/tools/public/queryEvidence.ts` and `mcp-server/src/tools/public/rebuildIndex.ts` to match.
+By default, the paths are resolved relative to the workspace root as `Shared Memory/Tailoring/tailoring_patterns.md` and `Shared Memory/Winning Patterns/winning_patterns.json`. If you use a different folder name, update `TAILORING_PATTERNS_PATH` and `WINNING_PATTERNS_PATH` in `mcp-server/src/tools/public/queryEvidence.ts` and `mcp-server/src/tools/public/rebuildIndex.ts` to match.
 
 ---
 

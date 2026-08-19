@@ -91,7 +91,7 @@ export async function rebuildEvidenceIndex(): Promise<string> {
 // blocks instead of E##/P## files. Embeds each pattern's trigger (T:) line,
 // since that's the JD-matching condition already written by hand.
 
-const TAILORING_PATTERNS_PATH = resolve(__dirname, "../../../../../Shared Memory/tailoring_patterns.md");
+const TAILORING_PATTERNS_PATH = resolve(__dirname, "../../../../../Shared Memory/Tailoring/tailoring_patterns.md");
 const PATTERNS_INDEX_PATH = resolve(__dirname, "../../../tailoring_patterns_index.json");
 
 export interface PatternIndexEntry {
