@@ -114,12 +114,14 @@ Use the sample files. Fit check sample/sample_job_description.md against the sam
 
 ## Optional: MCP Server
 
-The `mcp-server/` folder adds an optional MCP server for Claude Code and Codex sidebars. It exposes 4 tools:
+The `mcp-server/` folder adds an optional MCP server for Claude Code and Codex sidebars. It exposes 6 tools:
 
-- **`process_jd`** - headless-browser JD fetching from a URL, or pasted text directly
+- **`process_jd`** - headless-browser JD fetching from a URL, or pasted text directly. A fetched URL's raw text is written to a local snapshot file and never enters chat context.
 - **`save_jd_snapshot`** - saves a cleaned JD into `workflow_state/fresh_job_jds/`
 - **`query_evidence`** - local semantic search (on-device embedding model, no API key) over your evidence bank for a given JD
 - **`rebuild_evidence_index`** - re-embeds evidence files into the local index
+- **`write_fit_check_rows`** - appends fit-check results as a formatted table to `workflow_state/pending/fit_check_pending.md`
+- **`build_tailored_resume`** - compiles a tailored `.tex` with `lualatex`, mechanically checks page count and any marked bullet's rendered line length, and only publishes to `output/` if everything passes
 
 See [docs/tools.md](docs/tools.md) for parameters, examples, and how each tool works. Setup: [docs/mcp-setup.md](docs/mcp-setup.md).
 

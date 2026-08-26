@@ -10,6 +10,10 @@ workflow_state/*
 !workflow_state/fresh_job_jds/
 workflow_state/fresh_job_jds/*
 !workflow_state/fresh_job_jds/.gitkeep
+!workflow_state/pending/
+workflow_state/pending/*
+!workflow_state/pending/.gitkeep
+!workflow_state/pending/*.template.md
 
 # Real evidence is uncommitted by default; commit only guide/template files.
 evidence/**

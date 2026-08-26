@@ -2,12 +2,18 @@
 
 Run this pass automatically after every tailor, before reporting the final result. No exceptions. This is a non-blocking quality report, not an approval gate.
 
+## Same Call as the Build, Not a Separate Step
+
+With `build_tailored_resume` (see `03_TAILOR_BUILD.md`), the eval pass and the build are the same tool call. Compute the judgment checks below before calling the tool, pass the result as `evalJudgment`, and the tool appends its own tool-verified mechanical checks (length, verb, metric coverage - see Tool-Owned Checks below) and writes the combined block to `workflow_state/pending/eval_pending.md` automatically on a successful build. There is no separate "run eval" action to remember.
+
+If building manually (no MCP server), run the judgment checks yourself after compile and report them per the Output Format below; you will also need to check length and verb yourself by reading the compiled PDF, since nothing is measuring them mechanically.
+
 ## When to Run
 
-After compile confirms 1 page. Before reporting the final result to the user.
+Before reporting the final result to the user.
 
-- Single role: run immediately after that PDF is confirmed 1 page
-- Batch of 2+: skip per-role eval during the batch; run one consolidated eval after all PDFs are built
+- Single role: the judgment checks happen internally right before the `build_tailored_resume` call for that role
+- Batch of 2+: still one `build_tailored_resume` call per role with its own `evalJudgment`; report a consolidated summary after all PDFs are built rather than printing each role's eval as it completes
 
 ## What to Evaluate
 
@@ -21,9 +27,9 @@ Experience bullets and project bullets are evaluated differently.
 
 ---
 
-### Experience Bullets - Three Checks
+### Experience Bullets - Judgment Check
 
-#### 1. JD Match
+#### JD Match
 
 Does the bullet map to one of the top 3 requirements or responsibilities from the JD?
 
@@ -32,49 +38,28 @@ Does the bullet map to one of the top 3 requirements or responsibilities from th
 - Fail: bullet is generic, stack-agnostic, or addresses something the JD does not care about
 - Exception: bullets that establish credibility (team lead, scale, production ownership) pass even without a direct JD keyword match
 
-#### 2. Length
-
-Does the bullet exceed 2 lines when rendered in the compiled PDF?
-
-- Base this on the actual compiled output, not character count
-- Pass: 1-2 lines rendered
-- Fail: 3+ lines rendered
-
-#### 3. Verb
-
-Does the bullet open with a strong, specific action verb?
-
-- Fail (flag these): "Helped", "Assisted", "Collaborated", "Worked on", "Supported", "Responsible for", "Involved in", "Participated in", "Contributed to", "Partnered with"
-- Pass: "Built", "Engineered", "Led", "Developed", "Introduced", "Optimized", "Resolved", "Delivered", "Implemented", "Designed", "Architected", "Migrated", "Reduced", "Increased", and any direct ownership verb
-
 ---
 
-### Project Bullets - Three Checks
+### Project Bullets - Judgment Check
 
-#### 1. Resume Value
+#### Resume Value
 
 Does this bullet add genuine lift to the resume for this specific role?
 
 - Pass: bullet demonstrates a concrete technical capability, ownership, or outcome that makes the candidate look more capable for this JD
 - Fail: bullet is filler, restates the project name, or adds no information a recruiter would notice
 
-#### 2. Length
-
-Same as experience bullets - based on actual PDF render.
-
-#### 3. Verb
-
-Same as experience bullets.
-
 ---
 
-### Metric Coverage - Summary Stat Only
+## Tool-Owned Checks (do NOT evaluate these yourself)
 
-Do NOT flag individual bullets for missing metrics. Instead, count how many experience bullets contain a concrete number, percentage, scale, or outcome, and report it as a single summary line.
+Length, weak-opening-verb, and metric coverage are measured by `build_tailored_resume` from the compiled build and appended to the eval block as a "Mechanical checks" section. Never write length, verb, or metric rows yourself when the tool is available.
 
-- Count only experience bullets, not project bullets
-- Report as: `Metric coverage: X of Y experience bullets have a metric (Z%)`
-- No threshold or flag - this is an observation only, not a pass/fail
+- **Length**: any bullet marked with a `%%LC:<id>%%` token and listed in `lineCountTargets` gets its rendered line count measured from the actual compile, not guessed.
+- **Verb**: the tool flags a tracked bullet whose text opens with a weak verb ("Helped", "Assisted", "Collaborated", "Worked on", "Supported", "Responsible for", "Involved in", "Participated in", "Contributed to", "Partnered with").
+- **Metric coverage**: the tool counts how many tracked bullets contain a concrete number, percentage, scale, or outcome, reported as `X of Y tracked bullets have a metric (Z%)`. Set `countForMetrics: false` on a target's `lineCountTargets` entry to exclude a bullet (e.g. a project bullet) from this stat if you want it scoped to experience bullets only.
+
+Mark every experience and project bullet you want covered by these checks with `%%LC:<id>%%` and a line limit when assembling `texBody` for the Stage 3 build - an unmarked bullet gets none of this.
 
 ---
 
@@ -102,7 +87,9 @@ Are all skills listed in the Technical Skills section defensible from the resume
 
 ## Output Format
 
-Only include rows where a flag exists. Passing bullets are completely silent.
+Build the `evalJudgment` string from the judgment checks above (JD Match, Resume Value, Summary Quality, Skill Defensibility) - only include rows where a flag exists, passing bullets are completely silent. Pass it to `build_tailored_resume`; the tool appends its own `Mechanical checks (tool-verified):` section (Length, Verbs, Metric coverage) below it in `eval_pending.md` automatically.
+
+After the build call succeeds, report to the user using the same combined shape - your judgment section as composed, followed by the tool's `mechanicalChecks` string from the result:
 
 **With flags:**
 
@@ -115,26 +102,36 @@ Eval Pass
 
 Summary: PASS (role-specific framing reason) | FAIL (what to fix)
 Skills: PASS (all backed) | FAIL (specific skill with no backing)
-Metric coverage: X/Y (Z%).
+
+Mechanical checks (tool-verified):
+- Length: all pass (measured from compile)
+- Verbs: all pass
+- Metric coverage: X of Y tracked bullets have a metric (Z%)
 ```
 
-**Zero flags - single line:**
+**Zero flags - single line, plus the tool's mechanical section:**
 
 ```text
-Eval Pass - Resume is ready. Summary: PASS. Skills: PASS. Metric coverage: X/Y (Z%).
+Eval Pass - Resume is ready. Summary: PASS. Skills: PASS.
+
+Mechanical checks (tool-verified):
+- Length: all pass (measured from compile)
+- Verbs: all pass
+- Metric coverage: X of Y tracked bullets have a metric (Z%)
 ```
 
 ---
 
 ## Flag Values
 
-- `VERB` - weak opening verb
+Judgment flags (yours, go in `evalJudgment`):
 - `JD MISS` - does not map to JD requirements
-- `LONG` - exceeds 2 lines in rendered PDF
 - `VALUE` - project bullet adds no genuine lift (project bullets only)
 - `SUMMARY` - summary is generic or undersells fit
 - `SKILL` - skill listed with no supporting bullet evidence
-- Combine with `/` if multiple: `VERB/JD MISS`
+- Combine with `/` if multiple: `JD MISS/SKILL`
+
+`VERB` and `LONG` are not judgment flags - they appear only in the tool's `Mechanical checks` section, sourced from `build_tailored_resume`'s result, never assigned by you.
 
 ---
 
@@ -147,15 +144,17 @@ Eval Detail - Company - Role
 
 | # | Section  | Bullet (first 55 chars)        | Flag    | Proposed Fix                          |
 |---|----------|-------------------------------|---------|---------------------------------------|
-| 3 | Role     | Bullet opening text here...   | VERB    | "Rewritten opening with stronger verb"|
+| 3 | Role     | Bullet opening text here...   | JD MISS | Reframe around [JD-specific angle]    |
 | 7 | Projects | Project bullet opening...     | VALUE   | Credibility bullet - accept or swap   |
 ```
 
+If the tool's mechanical section flagged a `Verbs` or `Length` issue for a specific bullet id, include that row too, sourced from the tool's result, not your own read of the PDF.
+
 Notes on proposed fixes:
 - Keep the same meaning and evidence - do not invent claims or metrics
-- For VERB: show the full rewritten opening
+- For a tool-flagged weak verb: show the full rewritten opening
 - For JD MISS where no better evidence exists: write `Credibility bullet - accept or swap if evidence supports it`
-- For LENGTH: show a compressed version that fits 2 lines
+- For a tool-flagged length overage: show a compressed version that fits the bullet's `lineCountTargets` limit
 
 ---
 

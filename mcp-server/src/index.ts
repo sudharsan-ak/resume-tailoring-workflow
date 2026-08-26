@@ -4,6 +4,8 @@ import { z } from "zod";
 import { processJd, saveJdSnapshot } from "./tools/public/processJd.js";
 import { queryEvidence } from "./tools/public/queryEvidence.js";
 import { rebuildEvidenceIndex } from "./tools/public/rebuildIndex.js";
+import { writeFitCheckRows } from "./tools/public/fitCheckWriter.js";
+import { buildTailoredResume } from "./tools/public/resumeBuilder.js";
 
 const server = new McpServer({
   name: "resume-tailoring-mcp",
@@ -96,6 +98,55 @@ server.tool(
   async () => {
     const result = await rebuildEvidenceIndex();
     return { content: [{ type: "text", text: result }] };
+  }
+);
+
+server.tool(
+  "write_fit_check_rows",
+  "Append fit-check rows as a fixed-width ASCII table under today's date to workflow_state/pending/fit_check_pending.md; handles formatting, sorting, numbering. promote (no rows) copies rows from workflow_state/fresh_jobs_fit_check.md into the pending file instead. Never write these tables manually.",
+  {
+    rows: z.array(z.object({
+      company: z.string(),
+      role: z.string(),
+      initial: z.string().describe("Score e.g. '6.5' or 'N/A'"),
+      tailored: z.string().describe("Score e.g. '8.0' or 'N/A'"),
+      verdict: z.string().describe("Apply, Borderline, or Skip"),
+      notes: z.string().describe("2-3 line notes: top strength, biggest gap, any blocker flag"),
+      link: z.string().describe("Canonical employer/ATS URL. Required for every row; pass N/A only when the source truly has no URL."),
+      source: z.string().optional().describe("fresh_jobs target only"),
+      posted: z.string().optional().describe("fresh_jobs target only"),
+    })).optional().describe("All rows for this batch in one call; omit when using promote"),
+    promote: z.array(z.object({
+      company: z.string().describe("Company whose fresh-jobs rows to promote"),
+      role: z.string().optional().describe("Role title or fragment; omit for all roles from that company's latest scan"),
+    })).optional().describe("Selectors to copy rows from fresh_jobs_fit_check.md into fit_check_pending.md"),
+    target: z.enum(["fit_check_pending", "fresh_jobs"]).optional().describe(
+      "fit_check_pending (default) or fresh_jobs (workflow_state/fresh_jobs_fit_check.md)"
+    ),
+    batchLabel: z.string().optional().describe("Optional label for the search source, rendered as a subheading above the table"),
+  },
+  async ({ rows, promote, target, batchLabel }) => {
+    const result = writeFitCheckRows({ rows, promote, target, batchLabel });
+    return { content: [{ type: "text", text: result }] };
+  }
+);
+
+server.tool(
+  "build_tailored_resume",
+  "Compiles an assembled LaTeX resume with lualatex, measures rendered line count for marked bullets, and enforces a fail-closed page-count and line-limit gate before publishing. Mark any bullet you want line-count-checked with a %%LC:<id>%% token anywhere on its \\item line (the token itself is stripped) and list that id with its line limit in lineCountTargets. On success the .tex and .pdf are published atomically to output/tailored_tex/ and output/pdfs/ (any existing files at those paths are backed up first and restored on failure). On failure (compile error, page count > 1, or a tracked bullet over its line limit) nothing is published and the temp build dir is cleaned up. If evalJudgment is provided, on success the tool also appends an eval block (your judgment plus its own tool-verified mechanical checks: length, weak-opening-verb, and metric-coverage) to workflow_state/pending/eval_pending.md - the eval pass and the build are the same call, not a separate step.",
+  {
+    fileBaseName: z.string().describe("Output filename without extension, e.g. 'Jane Doe Resume - Example Co - Senior Engineer'"),
+    texBody: z.string().describe("The complete assembled LaTeX document (documentclass through \\end{document}). Mark trackable bullets with %%LC:<id>%% on the \\item line."),
+    lineCountTargets: z.array(z.object({
+      id: z.string().describe("Matches a %%LC:<id>%% marker in texBody"),
+      limit: z.number().describe("Max rendered lines allowed for this bullet, e.g. 2 for experience bullets, 1 for project bullets"),
+      countForMetrics: z.boolean().optional().describe("Include this bullet in the eval mechanical checks' metric-coverage stat (default true). Set false for project bullets if you want that stat scoped to experience bullets only."),
+    })).optional().describe("Bullets to mechanically check. Omit or leave empty to skip line-count enforcement (page-count and compile checks still run)."),
+    evalJudgment: z.string().optional().describe("Your judgment-based eval findings for this build: JD Match, Resume/Project Value, Summary Quality, Skill Defensibility. Free-form text. When provided, written to eval_pending.md alongside the tool's own mechanical checks on a successful build."),
+  },
+  async ({ fileBaseName, texBody, lineCountTargets, evalJudgment }) => {
+    const result = await buildTailoredResume({ fileBaseName, texBody, lineCountTargets, evalJudgment });
+    return { content: [{ type: "text", text: JSON.stringify(result) }] };
   }
 );
 

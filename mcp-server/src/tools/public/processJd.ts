@@ -45,12 +45,29 @@ async function fetchUrl(url: string): Promise<string> {
       locale: "en-US",
     });
     const page = await context.newPage();
-    await page.goto(url, { waitUntil: "networkidle", timeout: 30000 });
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
+    await page.waitForTimeout(2500);
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(1500);
     const text = await page.evaluate(() => document.body.innerText);
     return text.trim();
   } finally {
     await browser.close();
   }
+}
+
+function slugifyForSnapshot(value: string): string {
+  return value.replace(/[^a-z0-9]/gi, "_").slice(0, 60);
+}
+
+// Raw fetched text is written to a local temp file and never returned inline,
+// so it never enters chat context - only the file path does.
+function writeJdSnapshot(url: string, rawText: string): string {
+  const snapshotDir = workflowPath("workflow_state", "pending", "jd_snapshots");
+  mkdirSync(snapshotDir, { recursive: true });
+  const snapshotPath = join(snapshotDir, `${slugifyForSnapshot(url)}_${Date.now()}.txt`);
+  writeFileSync(snapshotPath, `=== ${url} ===\n\n${rawText}`, "utf-8");
+  return snapshotPath;
 }
 
 function readJdTextMd(): string {
@@ -59,12 +76,11 @@ function readJdTextMd(): string {
   return readFileSync(p, "utf-8");
 }
 
-// Step 1: fetch raw JD text and return it for Claude to clean up
+// Step 1: fetch the JD. Pasted/JD-text-file input returns text directly (already
+// in the caller's context, nothing new to hide). URL input is fetched headless and
+// written straight to a snapshot file - raw page text never enters chat context,
+// only the file path does. Caller reads the file once, cleans it, then deletes it.
 export async function processJd({ input, company, role, jdContent: providedContent }: ProcessJdInput): Promise<string> {
-  let rawText = "";
-  let link = "N/A";
-  let source = "manual";
-
   const isUrl = /^https?:\/\//i.test(input.trim());
 
   if (input.trim().toLowerCase() === "next") {
@@ -72,35 +88,64 @@ export async function processJd({ input, company, role, jdContent: providedConte
     if (!raw.trim() || raw.trim() === "<!-- Add job descriptions below -->") {
       return "JD Text.md is empty. Paste a job description or URL into it first.";
     }
-    rawText = raw;
-    source = "JD Text.md";
-    link = "See JD Text.md";
-  } else if (isUrl) {
-    link = input.trim();
-    source = new URL(link).hostname;
+    return [
+      `RAW_JD_FETCHED`,
+      `Company: ${company ?? "extract from JD text below"}`,
+      `Role: ${role ?? "extract from JD text below"}`,
+      `Source: JD Text.md`,
+      `Link: See JD Text.md`,
+      `---RAW_TEXT_START---`,
+      raw,
+      `---RAW_TEXT_END---`,
+      ``,
+      `Now clean this text: extract role summary, Skills (Required / Nice to have), Experience, Responsibilities, Location, Visa, Education. Remove all company background, values, benefits, compensation, boilerplate, nav, and footer. Then call save_jd_snapshot with the cleaned content.`,
+    ].join("\n");
+  }
+
+  if (isUrl) {
+    const link = input.trim();
+    const source = new URL(link).hostname;
     if (providedContent) {
-      rawText = providedContent;
-    } else {
-      try {
-        rawText = await fetchUrl(link);
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : String(err);
-        return `Failed to fetch URL: ${msg}`;
-      }
+      return [
+        `RAW_JD_FETCHED`,
+        `Company: ${company ?? "extract from JD text below"}`,
+        `Role: ${role ?? "extract from JD text below"}`,
+        `Source: ${source}`,
+        `Link: ${link}`,
+        `---RAW_TEXT_START---`,
+        providedContent,
+        `---RAW_TEXT_END---`,
+        ``,
+        `Now clean this text: extract role summary, Skills (Required / Nice to have), Experience, Responsibilities, Location, Visa, Education. Remove all company background, values, benefits, compensation, boilerplate, nav, and footer. Then call save_jd_snapshot with the cleaned content.`,
+      ].join("\n");
     }
-  } else {
-    rawText = input;
-    source = "pasted";
+    try {
+      const rawText = await fetchUrl(link);
+      const jdSnapshotPath = writeJdSnapshot(link, rawText);
+      return [
+        `JD_SNAPSHOT_WRITTEN`,
+        `Company: ${company ?? "extract from JD text after reading the snapshot"}`,
+        `Role: ${role ?? "extract from JD text after reading the snapshot"}`,
+        `Source: ${source}`,
+        `Link: ${link}`,
+        `jdSnapshotPath: ${jdSnapshotPath}`,
+        ``,
+        `Read the snapshot file once. Clean it: extract role summary, Skills (Required / Nice to have), Experience, Responsibilities, Location, Visa, Education. Remove all company background, values, benefits, compensation, boilerplate, nav, and footer. Call save_jd_snapshot with the cleaned content, then delete the snapshot file.`,
+      ].join("\n");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      return `Failed to fetch URL: ${msg}`;
+    }
   }
 
   return [
     `RAW_JD_FETCHED`,
     `Company: ${company ?? "extract from JD text below"}`,
     `Role: ${role ?? "extract from JD text below"}`,
-    `Source: ${source}`,
-    `Link: ${link}`,
+    `Source: pasted`,
+    `Link: N/A`,
     `---RAW_TEXT_START---`,
-    rawText,
+    input,
     `---RAW_TEXT_END---`,
     ``,
     `Now clean this text: extract role summary, Skills (Required / Nice to have), Experience, Responsibilities, Location, Visa, Education. Remove all company background, values, benefits, compensation, boilerplate, nav, and footer. Then call save_jd_snapshot with the cleaned content.`,

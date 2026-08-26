@@ -83,7 +83,7 @@ Add the MCP server under your Codex MCP configuration. The exact location depend
 
 ## Step 4 - Verify the server is running
 
-Restart your VS Code window after updating settings. In the Claude Code or Codex sidebar, the AI assistant should now list 4 tools as available: `process_jd`, `save_jd_snapshot`, `query_evidence`, `rebuild_evidence_index`. See [tools.md](tools.md) for what each one does.
+Restart your VS Code window after updating settings. In the Claude Code or Codex sidebar, the AI assistant should now list 6 tools as available: `process_jd`, `save_jd_snapshot`, `query_evidence`, `rebuild_evidence_index`, `write_fit_check_rows`, `build_tailored_resume`. See [tools.md](tools.md) for what each one does.
 
 If the tools do not appear, check the Output panel in VS Code for MCP server errors.
 

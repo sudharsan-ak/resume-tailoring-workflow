@@ -1,6 +1,6 @@
 # MCP Tools Reference
 
-The public `mcp-server/` exposes 4 tools. This is the reference for what each one does, its parameters, and an example call/response.
+The public `mcp-server/` exposes 6 tools. This is the reference for what each one does, its parameters, and an example call/response.
 
 Setup and registration: [mcp-setup.md](mcp-setup.md).
 Optional `query_evidence` extensions for pattern files you maintain yourself: [patterns-setup.md](patterns-setup.md).
@@ -9,7 +9,9 @@ Optional `query_evidence` extensions for pattern files you maintain yourself: [p
 
 ## `process_jd`
 
-Fetches a job description from a URL using a headless browser, accepts pasted JD text directly, or pulls the next unprocessed entry from `JD Text.md`. Returns raw page text for the AI to clean into structured sections - it does not clean or structure the JD itself. After receiving the result, the AI is expected to clean it and call `save_jd_snapshot` with the structured version.
+Fetches a job description from a URL using a headless browser, accepts pasted JD text directly, or pulls the next unprocessed entry from `JD Text.md`. It does not clean or structure the JD itself - after receiving the result, the AI is expected to clean it and call `save_jd_snapshot` with the structured version.
+
+Pasted text, `JD Text.md`, and a URL fetched with `jdContent` already supplied return raw text directly in the tool response, since that content is already known to the caller. A URL fetched without `jdContent` is different: the raw page text is written straight to a local snapshot file under `workflow_state/pending/jd_snapshots/` and never returned inline, so it never enters chat context - only the file path (`jdSnapshotPath`) does. Read that file once, clean it, call `save_jd_snapshot`, then delete the snapshot file.
 
 **Parameters**
 
@@ -25,7 +27,14 @@ Fetches a job description from a URL using a headless browser, accepts pasted JD
 ```
 process_jd({ input: "https://boards.greenhouse.io/example/jobs/12345", company: "Example Co", role: "Senior Software Engineer" })
 
-→ raw page text (unstructured), for the AI to clean before calling save_jd_snapshot
+→ JD_SNAPSHOT_WRITTEN
+   Company: Example Co
+   Role: Senior Software Engineer
+   Source: boards.greenhouse.io
+   Link: https://boards.greenhouse.io/example/jobs/12345
+   jdSnapshotPath: workflow_state/pending/jd_snapshots/https___boards_greenhouse..._1234567890.txt
+
+   Read the snapshot file once, clean it, then call save_jd_snapshot and delete the snapshot file.
 ```
 
 ---
@@ -130,3 +139,75 @@ rebuild_evidence_index({})
 ```
 
 (Second line only appears if `tailoring_patterns.md` exists.)
+
+---
+
+## `write_fit_check_rows`
+
+Appends fit-check results as a fixed-width ASCII table under today's date to `workflow_state/pending/fit_check_pending.md`. Handles table formatting, sorting by Tailored score descending, row numbering, and merging with any rows already logged today for the same company/role. Never write this table by hand - always route fit-check output through this tool.
+
+With `promote` instead of `rows`, it copies matching rows out of `workflow_state/fresh_jobs_fit_check.md` (the fresh-job-search history table) into the pending file, for when a role found during a job search batch should move into the active tailoring queue.
+
+**Parameters**
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `rows` | array | one of `rows`/`promote` | `{company, role, initial, tailored, verdict, notes, link, source?, posted?}` per role. Omit when using `promote`. |
+| `promote` | array | one of `rows`/`promote` | `{company, role?}` selectors. Omit `role` to promote every role from that company's latest search batch. |
+| `target` | `"fit_check_pending"` \| `"fresh_jobs"` | no | Which table to write to (default `"fit_check_pending"`) |
+| `batchLabel` | string | no | Optional subheading rendered above the table, e.g. to label a search source |
+
+**Example**
+
+```
+write_fit_check_rows({
+  rows: [{
+    company: "Example Co",
+    role: "Senior Software Engineer",
+    initial: "6.5",
+    tailored: "8.0",
+    verdict: "Apply",
+    notes: "Strong stack overlap. Gap: no direct GraphQL experience.",
+    link: "https://boards.greenhouse.io/example/jobs/12345",
+  }],
+})
+
+→ "Wrote 1 row(s) to fit_check_pending.md under 08/25/2026."
+```
+
+---
+
+## `build_tailored_resume`
+
+Compiles an assembled LaTeX resume with `lualatex`, mechanically measures the rendered line count of any bullet you choose to track, and enforces a fail-closed page-count and line-limit gate before publishing anything. On success the `.tex` and `.pdf` are published atomically to `output/tailored_tex/` and `output/pdfs/` (any existing files at those paths are backed up first and restored automatically if publishing fails partway through). On failure - a LaTeX compile error, page count over 1, or a tracked bullet over its line limit - nothing is published and the temp build directory is cleaned up.
+
+**Line tracking**: mark any bullet you want checked with a `%%LC:<id>%%` token anywhere on its `\item` line in `texBody`, then list that `id` with its line limit in `lineCountTargets`. The token is stripped before rendering and never appears in the compiled PDF. Bullets left unmarked are not checked - tracking is opt-in per bullet, not automatic for every `\item` in the document. This works with any resume section shape; nothing about bullet counts or section structure is hardcoded.
+
+**Parameters**
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `fileBaseName` | string | yes | Output filename without extension, e.g. `"Jane Doe Resume - Example Co - Senior Engineer"` |
+| `texBody` | string | yes | The complete assembled LaTeX document, `\documentclass` through `\end{document}` |
+| `lineCountTargets` | array | no | `{id, limit}` per bullet to check. Omit or pass `[]` to skip line-count enforcement (page-count and compile checks still run) |
+
+**Example**
+
+```
+build_tailored_resume({
+  fileBaseName: "Jane Doe Resume - Example Co - Senior Engineer",
+  texBody: "\\documentclass[10pt]{article}\n...\\item %%LC:exp-1%% Built a thing...\n...",
+  lineCountTargets: [
+    { id: "exp-1", limit: 2 },
+    { id: "proj-1", limit: 1 }
+  ]
+})
+
+→ { "ok": true, "pageCount": 1, "texPath": "...output/tailored_tex/Jane Doe Resume - Example Co - Senior Engineer.tex", "pdfPath": "...output/pdfs/Jane Doe Resume - Example Co - Senior Engineer.pdf" }
+```
+
+On a failed build:
+
+```
+→ { "ok": false, "pageCount": 1, "issues": [{ "bulletId": "exp-1", "rule": "exceeds 2 line(s) (measured 3)" }] }
+```

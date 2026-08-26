@@ -2,6 +2,16 @@
 
 Use this stage when the user asks how to tailor the resume for a role.
 
+## Silence Rule
+
+Do all analysis work silently: no narration, no reasoning shown, no scoring commentary, no file-read confirmations mid-run. Run the full Pass 1A analysis internally, then write the complete directives block straight to `workflow_state/pending/suggest_changes_pending.md`. Do not print the Pass 1A table in chat by default - the routed file is the output. After the write succeeds, emit one receipt line per role:
+
+```text
+[Company] - written to suggest_changes_pending.md
+```
+
+For a batch, stay silent between roles; emit the receipt lines together only after every requested role is written.
+
 ## Trigger / Inputs
 
 Trigger phrases:
@@ -23,13 +33,22 @@ Pass 2 triggers, only when explicitly requested:
 
 For demo runs, use sample files per `playbook/00_INDEX.md`.
 
+## Role Resolution
+
+At the start of every Stage 2 run, read `workflow_state/pending/fit_check_pending.md` once, even if Stage 1 already read the full JD earlier in this chat - the pending file is the current scope source and may contain manual additions or removals since.
+
+If Stage 1 read the full JD earlier in this same chat, reuse that JD content for Stage 2. Do not refetch it; passing the existing text to `query_evidence` is analysis, not a refetch.
+
+If the target role/company is not already in chat context:
+- User names a specific role/company: find the matching row in `fit_check_pending.md` (most recent if duplicates), run Stage 2 for that role only.
+- User gives no role name: read `fit_check_pending.md`, then read `workflow_state/pending/suggest_changes_pending.md` and skip any company+role pair that already has a directives block there. Run Stage 2 as a batch for the remaining rows only, one directives block per role. If every row already has a block, do the file write with zero new blocks (no-op) and skip the receipt line since nothing changed.
+- Use each matched row's `Link` as the JD source (pasted text > pending-row Link > `JD Text.md`). Only ask the user if no matching row exists, the table is empty, or the row's `Link` is `N/A` with no pasted/active JD available.
+
 Allowed inputs:
-- Stage 1 inputs:
-  - `JD Text.md`, a JD pasted directly in chat, a JD link, or `workflow_state/fresh_job_jds/...`
-  - `workflow_state/resume_digest.md` by default
-  - `workflow_state/bullet_index.md` by default
-  - `master_resume.tex` only if exact verification is needed
-  - If a JD entry contains Markdown image links, use only those explicitly referenced images for that role
+- `workflow_state/resume_digest.md` by default
+- `workflow_state/bullet_index.md` by default
+- `master_resume.tex` only if exact verification is needed
+- If a JD entry contains Markdown image links, use only those explicitly referenced images for that role
 - Skills inventory:
   - `evidence/work/skills_inventory.md`, only when the JD asks for skills or tools missing from the current digest or when deciding whether to bring a removed or optional skill back
   - For every role, explicitly check whether any JD-relevant skill or tool should be backfilled. This is a check, not a requirement to add anything.
@@ -67,11 +86,9 @@ Allowed inputs:
 
 ## Evidence Gap Interview
 
-Run this interview after evidence retrieval and gap identification, before finalizing the Pass 1A output.
-
 ### Trigger Conditions
 
-Run the interview only when ALL of the following are true:
+The interview only ever applies when ALL of the following are true:
 
 - Projected tailored score is 8.0 or above
 - At least one hard JD requirement (not a nice-to-have) has weak or no evidence backing in the retrieved files
@@ -79,16 +96,20 @@ Run the interview only when ALL of the following are true:
 
 ### Skip Conditions
 
-Do NOT run the interview when:
+Never applies when:
 
 - Projected tailored score is below 8.0
 - Every remaining gap is a nice-to-have or preferred item in the JD
 - The hard gap is a fundamental stack or domain mismatch that no answer from the user can close (e.g. "5+ years of Python" when Python is not the candidate's primary stack)
 - All hard JD requirements are already well-covered by existing evidence
 
-### How to Run
+### Default Behavior (silent execution)
 
-Before presenting the Pass 1A output, state briefly which gaps triggered the interview and why they are worth asking about. Then ask targeted questions - maximum 4, one per identified closeable gap.
+Meeting the trigger conditions does not interrupt the silent tool sequence with chat questions. Record the unresolved evidence under `Gaps` in the directives block and complete Pass 1A using existing evidence only. Run the interactive interview below only when the user explicitly requests interactive/chat review for this role (e.g. `interview me on gaps for [role]`).
+
+### How to Run (only when explicitly requested)
+
+State briefly which gaps triggered the interview and why they are worth asking about. Then ask targeted questions - maximum 4, one per identified closeable gap.
 
 Questions must be:
 - Tied to a specific hard JD requirement that is currently unmet or weakly met
@@ -105,22 +126,21 @@ Example framing: "Before I finalize the plan, a couple of things the JD requires
 - If the user answers "no" or "nothing relevant": note the gap remains, proceed with Pass 1A as normal
 - A blank or negative answer is a valid outcome - do not push for invented claims
 
-### Behavior After the Interview
-
-Incorporate confirmed answers into the Pass 1A output before presenting it. The user sees one consolidated Pass 1A - not a pre-interview draft and a post-interview draft. The interview is internal to the Stage 2 flow.
+Incorporate confirmed answers into the Pass 1A directives block before writing it. The interview is internal to the Stage 2 flow - it does not produce a separate pre/post output.
 
 ---
 
 ## Pass 1A Output
 
-Default for `suggest changes`. This is the compact decision layer.
+Default for `suggest changes`. This is the compact decision layer, written to the routed file, not printed to chat.
 
 - The `Initial -> Projected` score must reflect the best truthful projected score after all selected changes, not a first-pass or cautious estimate
-- Do not print full rewritten bullets, separate bullet maps, or Keep lists by default
-- Use this exact compact structure for each role:
+- Do not include full rewritten bullets, separate bullet maps, or Keep lists by default
+- Write each role as its own block, `---` separated, in `workflow_state/pending/suggest_changes_pending.md`, using this exact structure:
 
 ```text
-Company | Role | Initial -> Projected | Verdict
+## [Company] | [Role] | Initial -> Projected | Verdict
+
 Angle: ...
 Remove: ...
 Change: ...
@@ -130,6 +150,7 @@ Skills compress: Merged [Category A] + [Category B] -> "[New Label]" | Dropped: 
 Order: ...
 Projects: ...
 Gaps: ...
+
 ---
 ```
 
@@ -139,8 +160,8 @@ Formatting rules:
 - In `Skills remove`, use inline code for each removed skill
 - In `Skills add/backfill`, write `none` if nothing should be added. If support is weak, do not add it; mention the weak support under `Gaps`
 - In `Projects`, include selected project order, count, and intended bullet distribution for every project being kept, added, swapped, or removed
-- Keep output compact and readable
-- End the response with `Next commands:` and at least 2 relevant next-command suggestions unless the user already provided the next command
+- Keep the block compact and readable
+- After the file write, emit only the receipt line from the Silence Rule above - not the block content, not `Next commands:`
 
 ---
 

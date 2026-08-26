@@ -68,9 +68,30 @@ When Stage 3 starts and the needed inputs are available, the first substantive a
 ## Build Commands
 
 Build prerequisites:
-- Local PDF builds require a LaTeX distribution such as MiKTeX for Windows (https://miktex.org/download) or TeX Live for macOS/Linux (https://tug.org/texlive/)
+- Local PDF builds require a LaTeX distribution such as MiKTeX for Windows (https://miktex.org/download) or TeX Live for macOS/Linux (https://tug.org/texlive/), including `lualatex` and `pdfinfo` (poppler-utils) on PATH
 - If LaTeX is not installed, still create the tailored `.tex` file and tell the user PDF build is unavailable locally
 - The user can compile the `.tex` later after installing LaTeX or by uploading it to Overleaf
+
+### Preferred: `build_tailored_resume` MCP tool
+
+If the MCP server is configured, use `build_tailored_resume` instead of running scripts by hand. Assemble the complete tailored `.tex` body (master template plus the approved Stage 2 changes) and pass it as `texBody`, along with `fileBaseName`.
+
+To get mechanical line-length enforcement (no bullet over its rendered line limit) instead of eyeballing the PDF: mark any bullet you want checked with a `%%LC:<id>%%` token anywhere on its `\item` line, and list that id with its limit in `lineCountTargets` (2 for experience bullets, 1 for project bullets are reasonable defaults - adjust per the user's actual template). The token itself is stripped before rendering; it does not appear in the compiled PDF. Bullets left unmarked are not checked - marking is optional per bullet, not required for every one.
+
+The tool compiles with `lualatex`, checks page count with `pdfinfo`, checks every marked bullet's measured line count against its limit, and only then atomically publishes to `output/tailored_tex/` and `output/pdfs/` (existing files at those paths are backed up first, restored automatically on any failure). On failure - compile error, page count over 1, or a bullet over its line limit - nothing is published; fix the flagged issue and call the tool again.
+
+```
+build_tailored_resume({
+  fileBaseName: "Jane Doe Resume - Example Co - Senior Engineer",
+  texBody: "...(complete assembled .tex source)...",
+  lineCountTargets: [
+    { id: "exp-1", limit: 2 },
+    { id: "proj-1", limit: 1 }
+  ]
+})
+```
+
+### Fallback: manual scripts (no MCP server)
 
 Build one file:
 
@@ -107,6 +128,8 @@ Copy-Item .\scripts\build-task.template.json .\scripts\build-task.json
 
 `scripts/build-task.json` is ignored because queued role filenames may contain real company or role details.
 
+With the manual path, page count and bullet line length are not mechanically enforced - follow the One-Page Rule and Bullet Length Rule below by reading the compiled PDF yourself.
+
 ## Project Selection
 
 Before tailoring, read `evidence/projects/INDEX.md` to select the right project set for the role.
@@ -122,7 +145,9 @@ Rules:
 
 The final resume must be one page unless the user explicitly wants a longer format.
 
-After compile, check page count. If the PDF overflows:
+With `build_tailored_resume`, page count over 1 comes back as an `issues` entry - the build already failed to publish, so there is nothing to undo. With the manual script path, check page count after compile yourself.
+
+If the PDF overflows (either path):
 - Remove the weakest project bullet first, regardless of which project it belongs to
 - If still over, remove the next weakest project bullet
 - Only compress or cut experience bullets after project bullets are already lean
@@ -135,7 +160,7 @@ Do not weaken the most relevant evidence just to preserve project symmetry.
 - Aim for 2 lines maximum per bullet when rendered in the compiled PDF
 - Allow a 3-line bullet only when compressing it would meaningfully weaken the role-specific signal
 - Do not let multiple bullets expand just because space happens to exist
-- Check this after every compile. If any bullet exceeds 2 lines, compress before declaring done.
+- With `build_tailored_resume`, mark bullets with `%%LC:<id>%%` and pass matching `lineCountTargets` so this is measured, not eyeballed - a bullet over its limit comes back in `issues` and the build does not publish. With the manual script path, check this after every compile by reading the PDF.
 
 ## Persona at This Stage
 
