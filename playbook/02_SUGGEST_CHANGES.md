@@ -213,6 +213,13 @@ Only on `show the table` / `do pass 2`.
 - Avoid repeating the same lead verb across nearby bullets when a truthful alternative exists
 - Vary bullet openings deliberately during Pass 1B so sections do not read as templated
 
+### Concrete Anchor Lock
+
+- Every bullet change must preserve and name the source evidence's actual feature, system, defect, migration, or engineering process in the short gloss or JD angle.
+- Never replace the concrete anchor with a generic noun alone, such as "capability", "application", "behavior", "architecture", "platform", "workflow", "system", or "production fix".
+- JD alignment may change emphasis, order, and wording, but it may not remove the concrete anchor or combine details from unrelated evidence to imitate JD terminology.
+- If a directive cannot identify what was built, fixed, migrated, or implemented, it is incomplete and must be corrected before handing off to Stage 3.
+
 ---
 
 ## Skills Rules

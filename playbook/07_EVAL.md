@@ -38,6 +38,13 @@ Does the bullet map to one of the top 3 requirements or responsibilities from th
 - Fail: bullet is generic, stack-agnostic, or addresses something the JD does not care about
 - Exception: bullets that establish credibility (team lead, scale, production ownership) pass even without a direct JD keyword match
 
+#### Concrete Identity
+
+Can a cold recruiter identify the actual feature, system, defect, migration, or engineering process this bullet describes, and what changed?
+
+- Fail: flag `ABSTRACT` when a generic noun hides the concrete anchor, when tools or methods are named before the actual accomplishment, or when unrelated evidence is blended together
+- For build handoff judgment, run this check on the proposed final bullet before the `build_tailored_resume` call. For a compiled-resume eval, verify the concrete anchor remains in the compiled text.
+
 ---
 
 ### Project Bullets - Judgment Check
@@ -126,6 +133,7 @@ Mechanical checks (tool-verified):
 
 Judgment flags (yours, go in `evalJudgment`):
 - `JD MISS` - does not map to JD requirements
+- `ABSTRACT` - experience bullet hides its concrete anchor behind generic wording (see Concrete Identity above)
 - `VALUE` - project bullet adds no genuine lift (project bullets only)
 - `SUMMARY` - summary is generic or undersells fit
 - `SKILL` - skill listed with no supporting bullet evidence
@@ -154,6 +162,7 @@ Notes on proposed fixes:
 - Keep the same meaning and evidence - do not invent claims or metrics
 - For a tool-flagged weak verb: show the full rewritten opening
 - For JD MISS where no better evidence exists: write `Credibility bullet - accept or swap if evidence supports it`
+- For ABSTRACT: restore the evidence-backed concrete anchor without importing details from another feature or process
 - For a tool-flagged length overage: show a compressed version that fits the bullet's `lineCountTargets` limit
 
 ---

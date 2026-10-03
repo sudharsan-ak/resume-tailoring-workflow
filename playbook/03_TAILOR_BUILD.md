@@ -78,7 +78,7 @@ If the MCP server is configured, use `build_tailored_resume` instead of running 
 
 To get mechanical line-length enforcement (no bullet over its rendered line limit) instead of eyeballing the PDF: mark any bullet you want checked with a `%%LC:<id>%%` token anywhere on its `\item` line, and list that id with its limit in `lineCountTargets` (2 for experience bullets, 1 for project bullets are reasonable defaults - adjust per the user's actual template). The token itself is stripped before rendering; it does not appear in the compiled PDF. Bullets left unmarked are not checked - marking is optional per bullet, not required for every one.
 
-The tool compiles with `lualatex`, checks page count with `pdfinfo`, checks every marked bullet's measured line count against its limit, and only then atomically publishes to `output/tailored_tex/` and `output/pdfs/` (existing files at those paths are backed up first, restored automatically on any failure). On failure - compile error, page count over 1, or a bullet over its line limit - nothing is published; fix the flagged issue and call the tool again.
+The tool compiles with `lualatex`, checks page count with `pdfinfo`, checks every marked bullet's measured line count against its limit, and only then publishes sequentially to `output/tailored_tex/` and `output/pdfs/` (existing files at those paths are backed up first, restored automatically if either publish step fails). On failure - compile error, page count over 1, or a bullet over its line limit - nothing is published; fix the flagged issue and call the tool again.
 
 ```
 build_tailored_resume({
@@ -162,6 +162,10 @@ Do not weaken the most relevant evidence just to preserve project symmetry.
 - Do not let multiple bullets expand just because space happens to exist
 - With `build_tailored_resume`, mark bullets with `%%LC:<id>%%` and pass matching `lineCountTargets` so this is measured, not eyeballed - a bullet over its limit comes back in `issues` and the build does not publish. With the manual script path, check this after every compile by reading the PDF.
 
+## Concrete Anchor Gate
+
+Before calling `build_tailored_resume` (or compiling manually), every final experience bullet must identify in its opening clause what was built, fixed, migrated, integrated, or implemented, by naming the actual feature, system, defect, migration, or engineering process. Preserve the concrete anchor from the Stage 2 directive and source evidence - do not replace it with generic wording such as "capability", "application", "behavior", "architecture", "platform", "workflow", "system", or "production fix". Tooling, architecture, JD language, and impact explain how or why after the concrete anchor; they cannot substitute for it. If the line limit conflicts, shorten modifiers or JD-alignment language, never the concrete anchor.
+
 ## Persona at This Stage
 
 Before declaring a tailored resume done, read it as a skeptical hiring manager seeing it cold:
@@ -181,6 +185,10 @@ After a successful role-specific build:
 - Update `workflow_state/tailored_count.md`
 - Update `workflow_state/jobs_fetched_history.md` to mark the role as `Tailored` when enough company, role, and link information is available
 - Do not increment the tailored count for rebuilds of an already-tailored role
+
+## Pending Queue Cleanup
+
+Pass `company` and `role` to `build_tailored_resume` for every normal role build. On success, the tool removes that role's row from `fit_check_pending.md` and its directives block from `suggest_changes_pending.md` automatically - do not edit either pending file by hand. Neither file is ever deleted; other roles are left untouched. If a build fails or is never attempted, that role stays pending for retry.
 
 ## Output Format
 

@@ -28,8 +28,8 @@ If the workflow feels hard to follow at first, ask the assistant to read the rep
 
 | Stage | Trigger | Output |
 |---|---|---|
-| Fit Check | `Fit check this role.` | Score table: Initial, Tailored, Verdict |
-| Suggest Changes | `Suggest changes.` | Angle, bullet swaps, skill cuts, gaps |
+| Fit Check | `Fit check this role.` | Pending score table + chat receipt |
+| Suggest Changes | `Suggest changes.` | Pending tailoring directives + chat receipt |
 | Tailor + Build | `Tailor the PDF.` | Role-specific `.tex` + compiled PDF |
 | Eval Pass | Auto-runs after every build | Flagged bullets table, metric coverage, optional fixes |
 | Recruiter Outreach | `Draft recruiter outreach.` | Role brief + outreach draft |
@@ -62,16 +62,16 @@ See [docs/first-time-setup.md](docs/first-time-setup.md) for the full file list 
 CHAT_BOOTSTRAP.md        Start here in every new AI chat
 playbook/                Stage-by-stage workflow rules
 input/                   Drop your resume PDF here for setup
-JD Text.md               Template for role and JD input
+JD Text.md               Optional local role and JD input (create it yourself, gitignored)
 templates/               Default LaTeX master resume style
 sample/                  Fake demo resume, JD, evidence, role brief
 evidence/                Templates for work and project evidence
-Gmail/                   Optional outreach rules and role-brief template
+Gmail/                   Optional outreach rules and email template
 workflow_state/          Templates and local workflow state files
 output/                  Generated tailored TEX and PDF files (gitignored)
 scripts/                 Optional helper scripts
 docs/                    Setup, LaTeX options, privacy, architecture
-mcp-server/              Optional MCP server for headless JD fetching
+mcp-server/              Optional MCP server for the six tools listed below
 ```
 
 ---
@@ -116,7 +116,7 @@ Use the sample files. Fit check sample/sample_job_description.md against the sam
 
 The `mcp-server/` folder adds an optional MCP server for Claude Code and Codex sidebars. It exposes 6 tools:
 
-- **`process_jd`** - headless-browser JD fetching from a URL, or pasted text directly. A fetched URL's raw text is written to a local snapshot file and never enters chat context.
+- **`process_jd`** - headless-browser JD fetching from a URL, or pasted text directly. A fetched URL's raw text is written to a local snapshot file rather than returned inline; the assistant then reads the file to clean it.
 - **`save_jd_snapshot`** - saves a cleaned JD into `workflow_state/fresh_job_jds/`
 - **`query_evidence`** - local semantic search (on-device embedding model, no API key) over your evidence bank for a given JD
 - **`rebuild_evidence_index`** - re-embeds evidence files into the local index

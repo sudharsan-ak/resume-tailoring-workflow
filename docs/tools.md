@@ -179,7 +179,7 @@ write_fit_check_rows({
 
 ## `build_tailored_resume`
 
-Compiles an assembled LaTeX resume with `lualatex`, mechanically measures the rendered line count of any bullet you choose to track, and enforces a fail-closed page-count and line-limit gate before publishing anything. On success the `.tex` and `.pdf` are published atomically to `output/tailored_tex/` and `output/pdfs/` (any existing files at those paths are backed up first and restored automatically if publishing fails partway through). On failure - a LaTeX compile error, page count over 1, or a tracked bullet over its line limit - nothing is published and the temp build directory is cleaned up.
+Compiles an assembled LaTeX resume with `lualatex`, mechanically measures the rendered line count of any bullet you choose to track, and enforces a fail-closed page-count and line-limit gate before publishing anything. On success the `.tex` and `.pdf` are published sequentially to `output/tailored_tex/` and `output/pdfs/` (any existing files at those paths are backed up first and restored automatically if either publish step fails). On failure - a LaTeX compile error, page count over 1, or a tracked bullet over its line limit - nothing is published and the temp build directory is cleaned up.
 
 **Line tracking**: mark any bullet you want checked with a `%%LC:<id>%%` token anywhere on its `\item` line in `texBody`, then list that `id` with its line limit in `lineCountTargets`. The token is stripped before rendering and never appears in the compiled PDF. Bullets left unmarked are not checked - tracking is opt-in per bullet, not automatic for every `\item` in the document. This works with any resume section shape; nothing about bullet counts or section structure is hardcoded.
 
@@ -189,7 +189,12 @@ Compiles an assembled LaTeX resume with `lualatex`, mechanically measures the re
 |---|---|---|---|
 | `fileBaseName` | string | yes | Output filename without extension, e.g. `"Jane Doe Resume - Example Co - Senior Engineer"` |
 | `texBody` | string | yes | The complete assembled LaTeX document, `\documentclass` through `\end{document}` |
-| `lineCountTargets` | array | no | `{id, limit}` per bullet to check. Omit or pass `[]` to skip line-count enforcement (page-count and compile checks still run) |
+| `lineCountTargets` | array | no | `{id, limit, countForMetrics?}` per bullet to check. Omit or pass `[]` to skip line-count enforcement (page-count and compile checks still run) |
+| `evalJudgment` | string | no | Judgment-based eval findings. When provided, written to `eval_pending.md` alongside the tool's own mechanical checks on a successful build |
+| `company` | string | no | Company name for this role, as it appears in `fit_check_pending.md` / `suggest_changes_pending.md`. Pass with `role` to auto-clean both pending files on success |
+| `role` | string | no | Role title for this role. See `company` |
+
+**Pending-queue cleanup**: when both `company` and `role` are passed, a successful build removes that role's directives block from `suggest_changes_pending.md` first, then reuses the block's own stored company/role text to remove the matching row from `fit_check_pending.md` - so a build call whose `company`/`role` args are phrased slightly differently (e.g. brand casing) still cleans up the original rows. Each file is matched by company+role first, falling back to role title alone if that misses. The fit-check search spans every dated section in the file, not just today's, since a role can be tailored days after it was fit-checked. Neither pending file is ever deleted, and only the matched role's entry is removed - everything else is left untouched. Omit `company`/`role` to skip this cleanup entirely.
 
 **Example**
 

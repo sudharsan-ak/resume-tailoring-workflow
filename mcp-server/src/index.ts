@@ -133,7 +133,7 @@ server.tool(
 
 server.tool(
   "build_tailored_resume",
-  "Compiles an assembled LaTeX resume with lualatex, measures rendered line count for marked bullets, and enforces a fail-closed page-count and line-limit gate before publishing. Mark any bullet you want line-count-checked with a %%LC:<id>%% token anywhere on its \\item line (the token itself is stripped) and list that id with its line limit in lineCountTargets. On success the .tex and .pdf are published atomically to output/tailored_tex/ and output/pdfs/ (any existing files at those paths are backed up first and restored on failure). On failure (compile error, page count > 1, or a tracked bullet over its line limit) nothing is published and the temp build dir is cleaned up. If evalJudgment is provided, on success the tool also appends an eval block (your judgment plus its own tool-verified mechanical checks: length, weak-opening-verb, and metric-coverage) to workflow_state/pending/eval_pending.md - the eval pass and the build are the same call, not a separate step.",
+  "Compiles an assembled LaTeX resume with lualatex, measures rendered line count for marked bullets, and enforces a fail-closed page-count and line-limit gate before publishing. Mark any bullet you want line-count-checked with a %%LC:<id>%% token anywhere on its \\item line (the token itself is stripped) and list that id with its line limit in lineCountTargets. On success the .tex and .pdf are published sequentially to output/tailored_tex/ and output/pdfs/ (any existing files at those paths are backed up first and restored automatically if either publish step fails). On failure (compile error, page count > 1, or a tracked bullet over its line limit) nothing is published and the temp build dir is cleaned up. If evalJudgment is provided, on success the tool also appends an eval block (your judgment plus its own tool-verified mechanical checks: length, weak-opening-verb, and metric-coverage) to workflow_state/pending/eval_pending.md - the eval pass and the build are the same call, not a separate step. If company and role are provided, on success the tool also removes that role's row from fit_check_pending.md and its directives block from suggest_changes_pending.md (matched by company+role, falling back to role title alone if needed) - the pending queues clean themselves up as roles get built.",
   {
     fileBaseName: z.string().describe("Output filename without extension, e.g. 'Jane Doe Resume - Example Co - Senior Engineer'"),
     texBody: z.string().describe("The complete assembled LaTeX document (documentclass through \\end{document}). Mark trackable bullets with %%LC:<id>%% on the \\item line."),
@@ -143,9 +143,11 @@ server.tool(
       countForMetrics: z.boolean().optional().describe("Include this bullet in the eval mechanical checks' metric-coverage stat (default true). Set false for project bullets if you want that stat scoped to experience bullets only."),
     })).optional().describe("Bullets to mechanically check. Omit or leave empty to skip line-count enforcement (page-count and compile checks still run)."),
     evalJudgment: z.string().optional().describe("Your judgment-based eval findings for this build: JD Match, Resume/Project Value, Summary Quality, Skill Defensibility. Free-form text. When provided, written to eval_pending.md alongside the tool's own mechanical checks on a successful build."),
+    company: z.string().optional().describe("Company name for this role, as it appears in fit_check_pending.md / suggest_changes_pending.md. Pass together with role to have a successful build remove this role from both pending files automatically."),
+    role: z.string().optional().describe("Role title for this role. See company."),
   },
-  async ({ fileBaseName, texBody, lineCountTargets, evalJudgment }) => {
-    const result = await buildTailoredResume({ fileBaseName, texBody, lineCountTargets, evalJudgment });
+  async ({ fileBaseName, texBody, lineCountTargets, evalJudgment, company, role }) => {
+    const result = await buildTailoredResume({ fileBaseName, texBody, lineCountTargets, evalJudgment, company, role });
     return { content: [{ type: "text", text: JSON.stringify(result) }] };
   }
 );

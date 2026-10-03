@@ -2,6 +2,8 @@ import { execSync } from "child_process";
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "fs";
 import { join } from "path";
 import { workflowPath } from "../../config.js";
+import { removeFitCheckRow } from "./fitCheckWriter.js";
+import { removeSuggestChangesBlock } from "./suggestChangesCleanup.js";
 
 export interface LineCountTarget {
   id: string;
@@ -16,6 +18,10 @@ export interface BuildTailoredResumeInput {
   lineCountTargets?: LineCountTarget[];
   /** AI-authored judgment section (JD Match, Resume Value, Summary Quality, Skill Defensibility). When provided, written to workflow_state/pending/eval_pending.md alongside the tool-computed mechanical checks, in the same call that publishes the PDF. */
   evalJudgment?: string;
+  /** Company name for this role, exactly as it appears in fit_check_pending.md / suggest_changes_pending.md. When provided together with `role`, a successful build removes that role's row/block from both pending files. Omit to skip pending-queue cleanup. */
+  company?: string;
+  /** Role title for this role, exactly as it appears in fit_check_pending.md / suggest_changes_pending.md. See `company`. */
+  role?: string;
 }
 
 export interface ValidationIssue {
@@ -32,6 +38,7 @@ export interface BuildTailoredResumeResult {
   message?: string;
   mechanicalChecks?: string;
   evalWrittenTo?: string;
+  pendingCleanup?: string;
 }
 
 const LUA_PREAMBLE = `\\directlua{
@@ -301,7 +308,20 @@ export async function buildTailoredResume(input: BuildTailoredResumeInput): Prom
       evalWrittenTo = evalPath;
     }
 
-    return { ok: true, pageCount, texPath: finalTexPath, pdfPath: finalPdfPath, mechanicalChecks, evalWrittenTo };
+    let pendingCleanup: string | undefined;
+    if (input.company && input.role) {
+      // suggest_changes is the source of truth for identity here, same as the
+      // private workflow: its stored company/role is reused to look up the
+      // fit_check row, so a build call whose args are phrased slightly
+      // differently (e.g. brand casing) still matches the original rows.
+      const suggestChangesResult = removeSuggestChangesBlock(input.company, input.role);
+      const fitCheckCompany = suggestChangesResult.matched?.company ?? input.company;
+      const fitCheckRole = suggestChangesResult.matched?.role ?? input.role;
+      const fitCheckResult = removeFitCheckRow(fitCheckCompany, fitCheckRole);
+      pendingCleanup = `${suggestChangesResult.message} ${fitCheckResult.message}`;
+    }
+
+    return { ok: true, pageCount, texPath: finalTexPath, pdfPath: finalPdfPath, mechanicalChecks, evalWrittenTo, pendingCleanup };
   } finally {
     try { rmSync(tempDir, { recursive: true, force: true }); } catch {}
   }

@@ -24,10 +24,9 @@ Run the fit check per `playbook/01_FIT_CHECK.md`.
 
 ### Step 2 - Suggest Changes
 
-Run Pass 1A per `playbook/02_SUGGEST_CHANGES.md`.
-
-- Print the compact Pass 1A output as normal.
-- This is the human checkpoint. Stop here and wait.
+Run Pass 1A per `playbook/02_SUGGEST_CHANGES.md` as normal - write the directives block to `workflow_state/pending/suggest_changes_pending.md`, same as any other Suggest Changes run. Do not override Stage 2's output behavior.
+- Then read that file back and display the written directives block in chat for the role(s) just processed. This is the human checkpoint.
+- Stop here and wait.
 
 ### Step 3 - Checkpoint (mandatory pause)
 
@@ -49,8 +48,8 @@ If the user gives corrections instead of approval:
 
 On explicit user approval:
 
-- Run tailor + build per `playbook/03_TAILOR_BUILD.md`
-- Run eval pass per `playbook/07_EVAL.md` automatically after the PDF is confirmed 1 page
+- Compute the Stage 7 judgment eval per `playbook/07_EVAL.md` first, then run tailor + build per `playbook/03_TAILOR_BUILD.md`, passing the judgment as `evalJudgment` in that same `build_tailored_resume` call. Eval and build are not separate steps - the tool appends the eval block only on a successful build in the same call.
+- With manual builds (no MCP), evaluate after compile per `playbook/07_EVAL.md`.
 
 ## Rules
 
