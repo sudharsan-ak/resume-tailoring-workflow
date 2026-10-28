@@ -5,6 +5,7 @@ This guide walks you through setting up the `mcp-server/` so any MCP-compatible 
 ## Prerequisites
 
 - Node.js 18 or later - [download](https://nodejs.org/)
+- Python 3.10 or later - optional, only for the Python semantic engine
 - LaTeX installed locally (MiKTeX on Windows, TeX Live on macOS/Linux) - see [latex-setup.md](latex-setup.md), only needed if you build PDFs outside this server
 
 ---
@@ -18,6 +19,29 @@ npm run build
 ```
 
 This compiles the TypeScript source to `mcp-server/dist/`. You only need to run this once, or again after pulling updates.
+
+### Optional Python semantic engine
+
+Create a local virtual environment and install the Python dependencies:
+
+```bash
+cd mcp-server
+python -m venv .venv
+```
+
+Windows PowerShell:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r python\requirements.txt
+```
+
+macOS/Linux:
+
+```bash
+./.venv/bin/python -m pip install -r python/requirements.txt
+```
+
+The MCP server detects this `.venv` automatically. Alternatively, set `RESUME_PYTHON_EXECUTABLE` to a Python executable with the requirements installed. The model downloads on the first Python request.
 
 ---
 
@@ -99,6 +123,14 @@ Add an `evidencePath` key to `mcp-server/config.json` pointing at your evidence 
 
 **`evidence_index.json not found`**
 Run the `rebuild_evidence_index` tool once before calling `query_evidence` for the first time.
+
+**`evidence_index.python.json not found`**
+Run `rebuild_evidence_index({ engine: "python" })` before querying with the Python engine.
+
+**Python semantic service failed to start**
+Install `python/requirements.txt` into `mcp-server/.venv`, or set `RESUME_PYTHON_EXECUTABLE`. The service binds only to `127.0.0.1`; set `EVIDENCE_PYTHON_PORT` only if port `8765` is already occupied.
+
+To verify the TypeScript-to-FastAPI bridge directly, run `npm run verify:python` from `mcp-server/`.
 
 **`Cannot find module`**
 Run `npm run build` inside `mcp-server/` to recompile after any updates.

@@ -118,12 +118,14 @@ The `mcp-server/` folder adds an optional MCP server for Claude Code and Codex s
 
 - **`process_jd`** - headless-browser JD fetching from a URL, or pasted text directly. A fetched URL's raw text is written to a local snapshot file rather than returned inline; the assistant then reads the file to clean it.
 - **`save_jd_snapshot`** - saves a cleaned JD into `workflow_state/fresh_job_jds/`
-- **`query_evidence`** - local semantic search (on-device embedding model, no API key) over your evidence bank for a given JD
-- **`rebuild_evidence_index`** - re-embeds evidence files into the local index
+- **`query_evidence`** - local semantic search over your evidence bank using either the default TypeScript/Xenova engine or an optional Python/FastAPI sentence-transformers engine
+- **`rebuild_evidence_index`** - re-embeds evidence files into an engine-specific local index
 - **`write_fit_check_rows`** - appends fit-check results as a formatted table to `workflow_state/pending/fit_check_pending.md`
 - **`build_tailored_resume`** - compiles a tailored `.tex` with `lualatex`, mechanically checks page count and any marked bullet's rendered line length, and only publishes to `output/` if everything passes
 
 See [docs/tools.md](docs/tools.md) for parameters, examples, and how each tool works. Setup: [docs/mcp-setup.md](docs/mcp-setup.md).
+
+The Python backend is started on demand by the TypeScript MCP server, listens only on `127.0.0.1`, stays warm while the MCP process is running, and shuts down with its parent process. TypeScript remains the default, so existing installations continue to work without Python.
 
 ---
 
@@ -131,3 +133,5 @@ See [docs/tools.md](docs/tools.md) for parameters, examples, and how each tool w
 
 - [Claude Code](https://claude.ai/code) - Anthropic
 - [Codex](https://platform.openai.com/docs/codex) - OpenAI
+- TypeScript + Node.js - MCP orchestration and workflow tools
+- Python + FastAPI + sentence-transformers - optional local embedding, vector-similarity, and evidence-ranking backend

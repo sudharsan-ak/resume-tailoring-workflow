@@ -3,7 +3,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { processJd, saveJdSnapshot } from "./tools/public/processJd.js";
 import { queryEvidence } from "./tools/public/queryEvidence.js";
-import { rebuildEvidenceIndex } from "./tools/public/rebuildIndex.js";
+import { rebuildAllIndexes } from "./tools/public/rebuildIndex.js";
 import { writeFitCheckRows } from "./tools/public/fitCheckWriter.js";
 import { buildTailoredResume } from "./tools/public/resumeBuilder.js";
 
@@ -47,7 +47,7 @@ server.tool(
 
 server.tool(
   "query_evidence",
-  "Query the local evidence index using semantic similarity to find the most relevant evidence files for a given JD. Filter by experience or projects so one category cannot crowd out the other. Run rebuild_evidence_index first if the index does not exist. Optionally also surfaces tailoring_patterns.md and winning_patterns.json if you maintain them - see docs/patterns-setup.md.",
+  "Query the local evidence index using semantic similarity to find the most relevant evidence files for a given JD. Supports a TypeScript/Xenova engine (default) or a Python/FastAPI sentence-transformers engine. Build the matching engine index first with rebuild_evidence_index.",
   {
     jdText: z.string().describe("The full job description text to match against the evidence bank"),
     topN: z.number().optional().describe("Number of top results to return (default: 6)"),
@@ -59,6 +59,12 @@ server.tool(
     ),
     projectTopN: z.number().optional().describe(
       "Return this many top project files in one category-aware result"
+    ),
+    fullTextExperienceTopN: z.number().optional().describe(
+      "How many top experience results include full text in category-aware mode (default: 6)"
+    ),
+    fullTextProjectTopN: z.number().optional().describe(
+      "How many top project results include full text in category-aware mode (default: 3)"
     ),
     alreadyFullText: z.array(z.string()).optional().describe(
       "Filenames (short form, e.g. E01_example.md - as returned in results, not full paths) already returned full-text earlier in this chat (e.g. from a prior role in the same batch) - skip reprinting their body, return rank/score only"
@@ -72,10 +78,18 @@ server.tool(
     alreadyPatterns: z.array(z.string()).optional().describe(
       "Pattern IDs (e.g. P-001) already returned full-text earlier in this chat - skip reprinting, return rank/ID only"
     ),
+    engine: z.enum(["typescript", "python"]).optional().describe(
+      "Semantic engine for embedding and ranking. Defaults to typescript. Use the same engine with rebuild_evidence_index first."
+    ),
   },
-  async ({ jdText, topN, evidenceCategory, experienceTopN, projectTopN, alreadyFullText, includeWinningPatterns, includeTailoringPatterns, alreadyPatterns }) => {
+  async ({ jdText, topN, evidenceCategory, experienceTopN, projectTopN, fullTextExperienceTopN, fullTextProjectTopN, alreadyFullText, includeWinningPatterns, includeTailoringPatterns, alreadyPatterns, engine }) => {
     const categoryAwareLimits = experienceTopN !== undefined || projectTopN !== undefined
-      ? { experienceTopN: experienceTopN ?? 6, projectTopN: projectTopN ?? 4 }
+      ? {
+          experienceTopN: experienceTopN ?? 6,
+          projectTopN: projectTopN ?? 4,
+          fullTextExperienceTopN,
+          fullTextProjectTopN,
+        }
       : undefined;
     const result = await queryEvidence(
       jdText,
@@ -85,7 +99,8 @@ server.tool(
       alreadyFullText,
       includeWinningPatterns,
       includeTailoringPatterns,
-      alreadyPatterns
+      alreadyPatterns,
+      engine,
     );
     return { content: [{ type: "text", text: result }] };
   }
@@ -93,10 +108,14 @@ server.tool(
 
 server.tool(
   "rebuild_evidence_index",
-  "Rebuild the local evidence index by embedding all .md files in the configured evidencePath. Run this once after initial setup and again whenever evidence files are added or significantly updated.",
-  {},
-  async () => {
-    const result = await rebuildEvidenceIndex();
+  "Rebuild the local evidence and tailoring-pattern indexes with the selected semantic engine. TypeScript is the default; Python uses the local FastAPI sentence-transformers service.",
+  {
+    engine: z.enum(["typescript", "python"]).optional().describe(
+      "Semantic engine used to build the indexes. Defaults to typescript."
+    ),
+  },
+  async ({ engine }) => {
+    const result = await rebuildAllIndexes(engine);
     return { content: [{ type: "text", text: result }] };
   }
 );

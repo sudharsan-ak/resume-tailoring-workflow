@@ -71,7 +71,9 @@ save_jd_snapshot({
 
 ## `query_evidence`
 
-Semantic search over your local evidence bank (`E##`/`P##` files) using a local embedding model (`all-MiniLM-L6-v2` via `@xenova/transformers` - no API key, no internet after the first model download). Given a JD's full text, returns the most relevant evidence files ranked by cosine similarity.
+Semantic search over your local evidence bank (`E##`/`P##` files) using `all-MiniLM-L6-v2`. The default `typescript` engine runs through `@xenova/transformers`. The optional `python` engine uses a loopback-only FastAPI service with `sentence-transformers` and NumPy. Both are local and require no API key.
+
+The TypeScript MCP server remains the entry point. When `engine: "python"` is requested, it starts the Python service on demand, reuses it while the MCP process stays alive, and stops it with the parent process.
 
 **Category-aware mode**: pass `experienceTopN`/`projectTopN` to get two independently ranked sections (experience files and project files), so project evidence can't get crowded out by a large experience bank or vice versa. Within each section, the top `fullTextExperienceTopN`/`fullTextProjectTopN` results are inlined in full; the rest are headline-only (title + rank, open on demand).
 
@@ -94,6 +96,7 @@ Semantic search over your local evidence bank (`E##`/`P##` files) using a local 
 | `includeTailoringPatterns` | boolean | no | See [patterns-setup.md](patterns-setup.md) |
 | `includeWinningPatterns` | boolean | no | See [patterns-setup.md](patterns-setup.md) |
 | `alreadyPatterns` | string[] | no | See [patterns-setup.md](patterns-setup.md) |
+| `engine` | `"typescript"` \| `"python"` | no | Embedding and ranking engine (default `"typescript"`). Build the matching index first. |
 
 **Example**
 
@@ -101,7 +104,8 @@ Semantic search over your local evidence bank (`E##`/`P##` files) using a local 
 query_evidence({
   jdText: "Senior Full Stack Engineer... backend reliability, API design...",
   experienceTopN: 10,
-  projectTopN: 5
+  projectTopN: 5,
+  engine: "python"
 })
 
 →
@@ -121,24 +125,28 @@ Top 5 project evidence files for this JD. Full text included for the top 3; do N
 ...
 ```
 
-Run `rebuild_evidence_index` first if you get `evidence_index.json not found`.
+Run `rebuild_evidence_index` with the same engine first if its index is missing.
 
 ---
 
 ## `rebuild_evidence_index`
 
-Re-embeds every evidence file (and `tailoring_patterns.md`, if you maintain one - see [patterns-setup.md](patterns-setup.md)) and writes the local index files to disk. No parameters. Run once after first-time setup, and again any time you add, remove, or edit an evidence file or a tailoring pattern - the index does not update itself.
+Re-embeds every evidence file (and `tailoring_patterns.md`, if you maintain one - see [patterns-setup.md](patterns-setup.md)) and writes engine-specific local indexes plus metadata. Run once per engine after first-time setup, and again any time you add, remove, or edit evidence or a tailoring pattern.
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `engine` | `"typescript"` \| `"python"` | no | Engine used to build the indexes (default `"typescript"`) |
 
 **Example**
 
 ```
-rebuild_evidence_index({})
+rebuild_evidence_index({ engine: "python" })
 
-→ "Evidence index rebuilt. 46 files indexed and saved to evidence_index.json.
-   Tailoring patterns index rebuilt. 12 patterns indexed."
+→ "Evidence index rebuilt with python. 46 files indexed and saved to evidence_index.python.json.
+   Tailoring patterns index rebuilt with python. 12 patterns indexed."
 ```
 
-(Second line only appears if `tailoring_patterns.md` exists.)
+The Python call writes `evidence_index.python.json` and `tailoring_patterns_index.python.json`; the default TypeScript call keeps the original filenames. TypeScript and Python indexes stay separate because vectors produced by different runtimes must not be mixed. All generated indexes and metadata are gitignored because they can contain local file paths and private evidence previews.
 
 ---
 

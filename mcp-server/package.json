@@ -8,7 +8,9 @@
     "build": "tsc",
     "build:local": "tsc && node -e \"require('fs').copyFileSync('dist/index.local.js','dist/index.js')\"",
     "dev": "tsc --watch",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "test:public": "npm run build && node --test dist/tools/public/*.test.js",
+    "verify:python": "npm run build && node scripts/verify-python-semantic.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",

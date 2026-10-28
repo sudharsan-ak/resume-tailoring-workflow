@@ -21,6 +21,8 @@ Gmail/role_briefs/*TEMPLATE*
 workflow_state/*.template.md
 scripts/
 docs/
+mcp-server/src/tools/public/
+mcp-server/python/
 README.md
 LICENSE
 .gitignore
@@ -33,6 +35,7 @@ Purpose:
 - show the real folder structure through templates
 - provide the default LaTeX master resume template
 - provide reusable build/privacy scripts
+- provide a TypeScript MCP server with optional Python semantic retrieval
 
 ## Local Private Layer
 
@@ -77,6 +80,30 @@ Shared Memory/Winning Patterns/winning_patterns.json    (or wherever you point i
 ```
 
 `tailoring_patterns.md` holds reusable trigger-based rules distilled from past tailoring sessions. `winning_patterns.json` holds a log of applications that produced a real callback, with the JD signals and resume choices that likely contributed. Both are read-only from `query_evidence`'s perspective - nothing in the public build writes or curates them for you. See [patterns-setup.md](patterns-setup.md) for file formats, how to turn the flags on, and how to keep them current as your own job search progresses.
+
+## Semantic Retrieval Architecture
+
+```text
+Claude Code / Codex
+        |
+        v
+TypeScript MCP server
+        |
+        v
+Semantic engine adapter
+   |                 |
+   v                 v
+TypeScript/Xenova    Python/FastAPI
+(default)            sentence-transformers + NumPy
+   |                 |
+   +--------+--------+
+            v
+Engine-specific local index
+```
+
+The MCP server owns file discovery, tool schemas, output formatting, and process lifecycle. The selected semantic engine owns embeddings, vector similarity, and ranking. The Python FastAPI service starts only when requested, listens on loopback, remains warm for the MCP process lifetime, and exits with its parent.
+
+TypeScript and Python indexes are stored separately with engine/model metadata. Generated indexes are gitignored because they contain local paths and evidence previews.
 
 ## Workflow Data Flow
 

@@ -1,11 +1,16 @@
 import { readFileSync, existsSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+import { semanticIndexPaths } from "./semanticIndex.js";
+import {
+  getSemanticEngine,
+  semanticEngineMode,
+  type SemanticEngine,
+  type SemanticEngineMode,
+} from "./semanticEngine.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const INDEX_PATH = resolve(__dirname, "../../../evidence_index.json");
 const WINNING_PATTERNS_PATH = resolve(__dirname, "../../../../../Shared Memory/Winning Patterns/winning_patterns.json");
-const PATTERNS_INDEX_PATH = resolve(__dirname, "../../../tailoring_patterns_index.json");
 
 interface PatternIndexEntry {
   id: string;
@@ -37,26 +42,6 @@ interface ScoredEvidence {
   category: Exclude<EvidenceCategory, "all">;
   preview: string;
   score: number;
-}
-
-function cosineSimilarity(a: number[], b: number[]): number {
-  let dot = 0, normA = 0, normB = 0;
-  for (let i = 0; i < a.length; i++) {
-    dot += a[i] * b[i];
-    normA += a[i] * a[i];
-    normB += b[i] * b[i];
-  }
-  return dot / (Math.sqrt(normA) * Math.sqrt(normB));
-}
-
-async function getEmbedder() {
-  const { pipeline } = await import("@xenova/transformers");
-  return pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
-}
-
-async function embed(embedder: any, text: string): Promise<number[]> {
-  const output = await embedder(text, { pooling: "mean", normalize: true });
-  return Array.from(output.data as Float32Array);
 }
 
 function inferCategory(entry: EvidenceEntry): Exclude<EvidenceCategory, "all"> {
@@ -149,30 +134,34 @@ function loadWinningPatternsCompact(): string {
 // Full text for the top N, headline (ID + title) below that, bare rank/ID for
 // anything already surfaced this chat (alreadyPatterns) regardless of tier.
 async function formatTailoringPatterns(
-  jdText: string,
-  embedder: any,
+  patternsIndexPath: string,
+  jdVector: number[],
+  engine: SemanticEngine,
   topN: number,
   fullTextN: number,
   alreadyPatterns?: Set<string>
 ): Promise<string> {
-  if (!existsSync(PATTERNS_INDEX_PATH)) {
-    return "tailoring_patterns_index.json not found. Run rebuild_evidence_index (or curate_write, which rebuilds it automatically) first.";
+  if (!existsSync(patternsIndexPath)) {
+    return `${patternsIndexPath.split(/[\\/]/).pop()} not found. Run rebuild_evidence_index with engine "${engine.name}" first.`;
   }
   let entries: PatternIndexEntry[];
   try {
-    entries = JSON.parse(readFileSync(PATTERNS_INDEX_PATH, "utf-8"));
+    entries = JSON.parse(readFileSync(patternsIndexPath, "utf-8"));
   } catch {
-    return "Failed to parse tailoring_patterns_index.json.";
+    return `Failed to parse ${patternsIndexPath.split(/[\\/]/).pop()}.`;
   }
   if (entries.length === 0) {
     return "Tailoring patterns index is empty.";
   }
 
-  const jdVector = await embed(embedder, jdText);
-  const scored = entries
-    .map((e) => ({ ...e, score: cosineSimilarity(jdVector, e.vector) }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, topN);
+  const ranked = await engine.rankVectors(
+    jdVector,
+    entries.map((entry, index) => ({ id: String(index), vector: entry.vector })),
+  );
+  const scored = ranked.slice(0, topN).map((result) => ({
+    ...entries[Number(result.id)],
+    score: result.score,
+  }));
 
   const fullEntries: string[] = [];
   const headlineEntries: string[] = [];
@@ -210,40 +199,49 @@ export async function queryEvidence(
   alreadyFullText?: string[],
   includeWinningPatterns?: boolean,
   includeTailoringPatterns?: boolean,
-  alreadyPatterns?: string[]
+  alreadyPatterns?: string[],
+  engineOverride?: SemanticEngineMode,
 ): Promise<string> {
+  const mode = semanticEngineMode(engineOverride);
+  const engine = await getSemanticEngine(mode);
+  const paths = semanticIndexPaths(mode);
   const winningPatternsBlock = includeWinningPatterns
     ? `=== Winning Patterns (read once this chat - reuse for all later roles, do not re-fetch) ===\n${loadWinningPatternsCompact()}\n\n---\n\n`
     : "";
   const seenSet = alreadyFullText && alreadyFullText.length > 0 ? new Set(alreadyFullText) : undefined;
-  if (!existsSync(INDEX_PATH)) {
-    return "evidence_index.json not found. Run rebuild_evidence_index first to build the index.";
+  if (!existsSync(paths.evidence)) {
+    return `${paths.evidence.split(/[\\/]/).pop()} not found. Run rebuild_evidence_index with engine "${mode}" first.`;
   }
 
   let entries: EvidenceEntry[];
   try {
-    entries = JSON.parse(readFileSync(INDEX_PATH, "utf-8"));
+    entries = JSON.parse(readFileSync(paths.evidence, "utf-8"));
   } catch {
-    return "Failed to parse evidence_index.json. Run rebuild_evidence_index to rebuild it.";
+    return `Failed to parse ${paths.evidence.split(/[\\/]/).pop()}. Run rebuild_evidence_index with engine "${mode}".`;
   }
 
   if (entries.length === 0) {
     return "Evidence index is empty. Run rebuild_evidence_index to rebuild it.";
   }
 
-  const embedder = await getEmbedder();
-  const jdVector = await embed(embedder, jdText);
-  const scored: ScoredEvidence[] = entries.map((entry) => ({
-    file: entry.file,
-    category: inferCategory(entry),
-    preview: entry.text,
-    score: cosineSimilarity(jdVector, entry.vector),
-  }));
-  scored.sort((a, b) => b.score - a.score);
+  const [jdVector] = await engine.embed([jdText]);
+  const ranked = await engine.rankVectors(
+    jdVector,
+    entries.map((entry, index) => ({ id: String(index), vector: entry.vector })),
+  );
+  const scored: ScoredEvidence[] = ranked.map((result) => {
+    const entry = entries[Number(result.id)];
+    return {
+      file: entry.file,
+      category: inferCategory(entry),
+      preview: entry.text,
+      score: result.score,
+    };
+  });
 
   const patternsSeenSet = alreadyPatterns && alreadyPatterns.length > 0 ? new Set(alreadyPatterns) : undefined;
   const tailoringPatternsBlock = includeTailoringPatterns
-    ? `${await formatTailoringPatterns(jdText, embedder, 8, 4, patternsSeenSet)}\n\n---\n\n`
+    ? `${await formatTailoringPatterns(paths.patterns, jdVector, engine, 8, 4, patternsSeenSet)}\n\n---\n\n`
     : "";
 
   if (categoryAwareLimits) {

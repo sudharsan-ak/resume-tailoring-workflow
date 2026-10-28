@@ -3,9 +3,14 @@ import { resolve, join, extname, basename } from "path";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 import { getConfig } from "../../config.js";
+import { semanticIndexPaths, writeSemanticIndexMetadata } from "./semanticIndex.js";
+import {
+  getSemanticEngine,
+  semanticEngineMode,
+  type SemanticEngineMode,
+} from "./semanticEngine.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const INDEX_PATH = resolve(__dirname, "../../../evidence_index.json");
 
 interface EvidenceEntry {
   file: string;
@@ -15,27 +20,6 @@ interface EvidenceEntry {
 }
 
 type EvidenceCategory = "experience" | "projects";
-
-function cosineSimilarity(a: number[], b: number[]): number {
-  let dot = 0, normA = 0, normB = 0;
-  for (let i = 0; i < a.length; i++) {
-    dot += a[i] * b[i];
-    normA += a[i] * a[i];
-    normB += b[i] * b[i];
-  }
-  return dot / (Math.sqrt(normA) * Math.sqrt(normB));
-}
-
-async function getEmbedder() {
-  // Dynamic import so the heavy model loads only when actually needed
-  const { pipeline } = await import("@xenova/transformers");
-  return pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
-}
-
-async function embed(embedder: any, text: string): Promise<number[]> {
-  const output = await embedder(text, { pooling: "mean", normalize: true });
-  return Array.from(output.data as Float32Array);
-}
 
 function collectMdFiles(dir: string): string[] {
   const files: string[] = [];
@@ -54,7 +38,7 @@ function getEvidenceCategory(file: string): EvidenceCategory {
   return /[\\/]evidence[\\/]projects[\\/]/i.test(file) ? "projects" : "experience";
 }
 
-export async function rebuildEvidenceIndex(): Promise<string> {
+export async function rebuildEvidenceIndex(engineOverride?: SemanticEngineMode): Promise<string> {
   const config = getConfig();
   if (!config.evidencePath) {
     return "evidencePath is not set in config.json. Add it and try again.";
@@ -72,18 +56,27 @@ export async function rebuildEvidenceIndex(): Promise<string> {
     return `No .md files found in ${evidenceDir}`;
   }
 
-  const embedder = await getEmbedder();
-  const entries: EvidenceEntry[] = [];
+  const mode = semanticEngineMode(engineOverride);
+  const engine = await getSemanticEngine(mode);
+  const paths = semanticIndexPaths(mode);
+  const texts = files.map((file) => readFileSync(file, "utf-8"));
+  const vectors = await engine.embed(texts);
+  const entries: EvidenceEntry[] = files.map((file, index) => ({
+    file,
+    category: getEvidenceCategory(file),
+    text: texts[index].slice(0, 500),
+    vector: vectors[index],
+  }));
 
-  for (const file of files) {
-    const text = readFileSync(file, "utf-8");
-    const vector = await embed(embedder, text);
-    entries.push({ file, category: getEvidenceCategory(file), text: text.slice(0, 500), vector });
-  }
+  writeFileSync(paths.evidence, JSON.stringify(entries, null, 2), "utf-8");
+  writeSemanticIndexMetadata(
+    paths.evidenceMetadata,
+    engine,
+    vectors[0]?.length ?? 0,
+    entries.length,
+  );
 
-  writeFileSync(INDEX_PATH, JSON.stringify(entries, null, 2), "utf-8");
-
-  return `Evidence index rebuilt. ${entries.length} files indexed and saved to evidence_index.json.`;
+  return `Evidence index rebuilt with ${mode}. ${entries.length} files indexed and saved to ${basename(paths.evidence)}.`;
 }
 
 // --- Tailoring patterns index ---
@@ -92,7 +85,6 @@ export async function rebuildEvidenceIndex(): Promise<string> {
 // since that's the JD-matching condition already written by hand.
 
 const TAILORING_PATTERNS_PATH = resolve(__dirname, "../../../../../Shared Memory/Tailoring/tailoring_patterns.md");
-const PATTERNS_INDEX_PATH = resolve(__dirname, "../../../tailoring_patterns_index.json");
 
 export interface PatternIndexEntry {
   id: string;
@@ -123,24 +115,39 @@ function parsePatternBlocks(content: string): { id: string; type: string; title:
   return results;
 }
 
-export async function rebuildTailoringPatternsIndex(): Promise<string> {
+export async function rebuildTailoringPatternsIndex(engineOverride?: SemanticEngineMode): Promise<string> {
   if (!existsSync(TAILORING_PATTERNS_PATH)) {
     return "tailoring_patterns.md not found; skipped pattern index rebuild.";
   }
+  const mode = semanticEngineMode(engineOverride);
+  const engine = await getSemanticEngine(mode);
+  const paths = semanticIndexPaths(mode);
   const content = readFileSync(TAILORING_PATTERNS_PATH, "utf-8");
   const parsed = parsePatternBlocks(content);
   if (parsed.length === 0) {
-    writeFileSync(PATTERNS_INDEX_PATH, "[]", "utf-8");
+    writeFileSync(paths.patterns, "[]", "utf-8");
+    writeSemanticIndexMetadata(paths.patternsMetadata, engine, 0, 0);
     return "No P-### pattern blocks found; wrote empty pattern index.";
   }
 
-  const embedder = await getEmbedder();
-  const entries: PatternIndexEntry[] = [];
-  for (const p of parsed) {
-    const vector = await embed(embedder, p.trigger);
-    entries.push({ id: p.id, type: p.type, title: p.title, block: p.block, trigger: p.trigger, vector });
-  }
+  const vectors = await engine.embed(parsed.map((pattern) => pattern.trigger));
+  const entries: PatternIndexEntry[] = parsed.map((pattern, index) => ({
+    ...pattern,
+    vector: vectors[index],
+  }));
 
-  writeFileSync(PATTERNS_INDEX_PATH, JSON.stringify(entries), "utf-8");
-  return `Tailoring patterns index rebuilt. ${entries.length} patterns indexed.`;
+  writeFileSync(paths.patterns, JSON.stringify(entries), "utf-8");
+  writeSemanticIndexMetadata(
+    paths.patternsMetadata,
+    engine,
+    vectors[0]?.length ?? 0,
+    entries.length,
+  );
+  return `Tailoring patterns index rebuilt with ${mode}. ${entries.length} patterns indexed.`;
+}
+
+export async function rebuildAllIndexes(engineOverride?: SemanticEngineMode): Promise<string> {
+  const evidence = await rebuildEvidenceIndex(engineOverride);
+  const patterns = await rebuildTailoringPatternsIndex(engineOverride);
+  return `${evidence}\n${patterns}`;
 }
