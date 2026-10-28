@@ -1,5 +1,8 @@
 # Resume Tailoring Workflow
 
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)
+
 A privacy-first workflow for turning a default resume into a role-specific LaTeX PDF using an AI coding assistant.
 
 The assistant acts like a skeptical recruiter or hiring manager: it scores honestly, challenges weak fit, and tailors only from evidence the resume can actually defend.
